@@ -1,36 +1,52 @@
 package ru.avem.kspemstator.view
 
+import javafx.application.Platform
+import javafx.collections.ObservableList
 import javafx.geometry.Pos
-import javafx.scene.control.Alert
 import javafx.scene.control.ComboBox
+import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
+import javafx.scene.layout.VBox
 import javafx.stage.Modality
-import org.jetbrains.exposed.sql.transactions.transaction
-import ru.avem.kspemstator.database.entities.*
+import ru.avem.kspemstator.controllers.MainViewController
+import ru.avem.kspemstator.database.entities.ExperimentObject
+import ru.avem.kspemstator.database.entities.User
+import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.Styles.Companion.medium
 import tornadofx.*
 
 
 class MainView : View("Испытание активной стали статора") {
 
-    private var comboboxUserSelector: ComboBox<User> by singleAssign()
+    private val controller: MainViewController by inject()
 
-    private var textFieldTypeObject: TextField by singleAssign()
-    private var textFieldFacNumber: TextField by singleAssign()
-    private var textFieldOutside: TextField by singleAssign()
-    private var textFieldInside: TextField by singleAssign()
-    private var textFieldIronLength: TextField by singleAssign()
-    private var textFieldBackHeight: TextField by singleAssign()
+    var comboboxUserSelector: ComboBox<User> by singleAssign()
 
+    var textFieldTypeObject: TextField by singleAssign()
+    var textFieldFacNumber: TextField by singleAssign()
+    var textFieldOutside: TextField by singleAssign()
+    var textFieldInside: TextField by singleAssign()
+    var textFieldIronLength: TextField by singleAssign()
+    var textFieldBackHeight: TextField by singleAssign()
 
-    private var comboboxMaterial: ComboBox<ExperimentObject> by singleAssign()
-    private var comboboxMark: ComboBox<ExperimentObject> by singleAssign()
-    private var comboboxTypeInsulation: ComboBox<ExperimentObject> by singleAssign()
+    var comboBoxMark: ComboBox<ExperimentObject> by singleAssign()
+    var comboBoxMaterial: ComboBox<String> by singleAssign()
+    var comboBoxInsulation: ComboBox<String> by singleAssign()
+
+    private var vBoxMain: VBox by singleAssign()
+
+    private var textAreaCalculate: TextArea by singleAssign()
+    private var textAreaExperiment: TextArea by singleAssign()
+
+    private val insulationList: ObservableList<String> = observableList("Лак", "Окидирование")
+    private val materialString: ObservableList<String> = observableList("Алюминий", "Сталь")
 
     override fun onDock() {
-        refreshUsers()
+        comboBoxInsulation.items = insulationList
+        comboBoxMaterial.items = materialString
+        controller.refreshUsers()
+        controller.refreshObjects()
     }
-
 
     override val root = borderpane {
 
@@ -52,10 +68,7 @@ class MainView : View("Испытание активной стали стато
                             )
                         }
                     }
-                    item("Объекты испытания") {
-
-                    }
-                    item("Сталь") {
+                    item("Материал") {
                         action {
                             find<AddExperimentObjectWindow>().openModal(
                                 modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
@@ -70,7 +83,7 @@ class MainView : View("Испытание активной стали стато
                 menu("Информация") {
                     item("Версия ПО") {
                         action {
-                            showAboutUs()
+                            controller.showAboutUs()
                         }
                     }
                 }
@@ -88,84 +101,54 @@ class MainView : View("Испытание активной стали стато
                     }
                     vbox(spacing = 8.0) {
                         alignmentProperty().set(Pos.TOP_CENTER)
-                        label("Испытатель") {
-
-                        }
+                        label("Испытатель")
                         comboboxUserSelector = combobox {
                             prefWidth = 200.0
 
                         }
-                        label("") {
-
-                        }
-                        label("ПАРАМЕТРЫ ДВИГАТЕЛЯ") {
-
-                        }
-                        label("Тип двигателя:") {
-
-                        }
+                        label("")
+                        label("ПАРАМЕТРЫ ДВИГАТЕЛЯ")
+                        label("Тип двигателя:")
                         textFieldFacNumber = textfield {
-                        }
-                        label("Номер двигателя:") {
 
                         }
+                        label("Номер двигателя:")
                         textFieldTypeObject = textfield {
 
                         }
-                        label("Наружный диаметр:") {
-
-                        }
+                        label("Наружный диаметр:")
                         textFieldOutside = textfield {
 
                         }
-                        label("Внутренний диаметр:") {
-
-                        }
+                        label("Внутренний диаметр:")
                         textFieldInside = textfield {
 
                         }
-                        label("Длина железа:") {
-
-                        }
+                        label("Длина железа:")
                         textFieldIronLength = textfield {
 
                         }
-                        label("Высота спинки:") {
-
-                        }
+                        label("Высота спинки:")
                         textFieldBackHeight = textfield {
 
                         }
-                        label("Материал станины:") {
-
-                        }
-                        comboboxMaterial = combobox {
+                        label("Материал станины:")
+                        comboBoxMaterial = combobox {
                             prefWidth = 200.0
 
                         }
-                        label("Марка стали:") {
-
-                        }
-                        comboboxMark = combobox {
+                        label("Марка материала:")
+                        comboBoxMark = combobox {
                             prefWidth = 200.0
 
                         }
-                        label("Тип изоляции:") {
-
-                        }
-                        comboboxTypeInsulation = combobox {
+                        label("Тип изоляции:")
+                        comboBoxInsulation = combobox {
                             prefWidth = 200.0
 
                         }
-                        button("Автовыбор стали") {
-
-                            action {
-                                refreshObjects()
-                            }
-                        }
-
                     }
-                    vbox(spacing = 16.0) {
+                    vBoxMain = vbox(spacing = 16.0) {
                         alignmentProperty().set(Pos.TOP_CENTER)
                         hbox(spacing = 16.0) {
                             vbox(spacing = 16.0) {
@@ -177,8 +160,8 @@ class MainView : View("Испытание активной стали стато
                                         calculate()
                                     }
                                 }.addClass(Styles.hard)
-                                textarea {
-                                    prefHeight = 300.0
+                                textAreaCalculate = textarea {
+                                    prefHeight = 600.0
 
                                 }
                             }
@@ -189,8 +172,8 @@ class MainView : View("Испытание активной стали стато
                                     prefWidth = 300.0
 
                                 }.addClass(Styles.hard)
-                                textarea {
-                                    prefHeight = 300.0
+                                textAreaExperiment = textarea {
+                                    prefHeight = 600.0
 
                                 }
                             }
@@ -203,39 +186,61 @@ class MainView : View("Испытание активной стали стато
 
     private fun calculate() {
 
+//        textFieldTypeObject.text = "1111111"
+//        textFieldFacNumber.text = "2222222"
+//        textFieldOutside.text = "3333333"
+//        textFieldInside.text = "2222222"
+//        textFieldBackHeight.text = "22"
+//        textFieldIronLength.text = "11"
+
+        if (!controller.isValuesEmpty()) {
+            val p = comboBoxMark.selectionModel.selectedItem.density.toDouble()
+
+            val ki: Double = if (comboBoxInsulation.selectionModel.selectedItem == "Лак") {
+                0.93
+            } else {
+                0.95
+            }
+            val insideD: Double = textFieldInside.text.toDouble()
+            val outsideD: Double = textFieldOutside.text.toDouble()
+            val l: Double = textFieldIronLength.text.toDouble()
+            val h: Double = textFieldBackHeight.text.toDouble()
+            val lakt: Double = ki * l * 0.001
+            val lsr: Double = Math.PI * (outsideD - h) * 0.001
+            val sh: Double = lakt * h * 0.001
+            val v: Double = lsr * sh
+            val m: Double = v * p
+            val u: Double = 0.0
+            Platform.runLater {
+                textAreaCalculate.text = "1.Длина активной стали (Lакт) в метрах:"
+                textAreaCalculate.text += "\nLакт = ki * L * 10-³ = " + String.format("%.4f м.", lakt)
+                textAreaCalculate.text += "\n2.Длина средней линии железа (Lср) в метрах:"
+                textAreaCalculate.text += "\nLср = π(D - h) * 10-³ = " + String.format("%.4f м.", lsr)
+                textAreaCalculate.text += "\n3.Сечение спинки Sh (м²)"
+                textAreaCalculate.text += "\nSh = Lакт * h * 10-³ = " + String.format("%.4f м².", sh)
+                textAreaCalculate.text += "\n4.Объем железа (V) (м³)"
+                textAreaCalculate.text += "\nV = Lср * Sh = " + String.format("%.4f м³.", v)
+                textAreaCalculate.text += "\n5.Масса железа (V) (кг)"
+                textAreaCalculate.text += "\nM = V * p = " + String.format("%.4f кг.", m)
+                textAreaCalculate.text += "\n6.Расчетное напряжение Uo"
+                textAreaCalculate.text += "\nUo = 250 * W * Bo * Sh * kr= " + String.format("%.4f В.", u)
+
+                Toast.makeText("Выполнен расчет").show(Toast.ToastType.INFORMATION)
+            }
+        } else {
+            Toast.makeText("Неверно заполнены поля").show(Toast.ToastType.WARNING)
+        }
     }
 
     private fun clearTFs() {
-        textFieldTypeObject.text = ""
         textFieldTypeObject.text = ""
         textFieldFacNumber.text = ""
         textFieldOutside.text = ""
         textFieldInside.text = ""
         textFieldIronLength.text = ""
         textFieldBackHeight.text = ""
-    }
-
-    private fun showAboutUs() {
-        val alert = Alert(Alert.AlertType.INFORMATION)
-        alert.title = "Версия ПО"
-        alert.headerText = "Версия: 0.0.1b"
-        alert.contentText = "Дата: 05.12.2019"
-        alert.showAndWait()
-    }
-
-    private fun refreshUsers() {
-        comboboxUserSelector.items = transaction {
-            User.find {
-                Users.login notLike "admin"
-            }.toList().observable()
-        }
-    }
-
-    private fun refreshObjects() {
-        comboboxMaterial.items = transaction {
-            ExperimentObject.find {
-                ObjectsTable.material notLike ""
-            }.toList().observable()
-        }
+        comboBoxMark.selectionModel.select(0)
+        comboBoxMaterial.selectionModel.select(0)
+        comboBoxInsulation.selectionModel.select(0)
     }
 }

@@ -2,16 +2,15 @@ package ru.avem.kspemstator.view
 
 import javafx.geometry.Pos
 import javafx.scene.control.TextField
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.notLike
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.User
-import ru.avem.kspemstator.database.entities.Users
 import tornadofx.*
 import tornadofx.controlsfx.warningNotification
 
 class UserAddWindow : View("Добавить пользователя") {
     private val parentView: UserEditorWindow by inject()
-    private val mainView: MainView by inject()
+    private val mainViewController: MainViewController by inject()
 
     private var textFieldLogin: TextField by singleAssign()
     private var textFieldPassword: TextField by singleAssign()
@@ -85,6 +84,7 @@ class UserAddWindow : View("Добавить пользователя") {
                                 this.fullName = fullName
                             }
                         }
+                        mainViewController.refreshUsers()
                         parentView.refreshUsersTable()
                         textFieldFullName.clear()
                         textFieldLogin.clear()

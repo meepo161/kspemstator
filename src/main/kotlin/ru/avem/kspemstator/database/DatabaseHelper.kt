@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.database.entities.*
-import ru.avem.kspemstator.database.entities.ObjectsTable.material
 import ru.avem.kspemstator.database.entities.Users.login
 import java.sql.Connection
 
@@ -14,7 +13,7 @@ fun validateDB() {
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
 
     transaction {
-        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
+//        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
         SchemaUtils.create(Users, ProtocolsTable, ObjectsTable)
     }
 
@@ -32,12 +31,10 @@ fun validateDB() {
                 }
 
                 ExperimentObject.new {
-                    material = "1"
-                    mark = "2"
-                    density = "1"
-                    losses = "2"
-                    intensity = "3"
-                    insulation = "3"
+                    mark = "2212"
+                    density = "7800"
+                    losses = "2.6"
+                    intensity = "1.42"
                 }
             }
         }
