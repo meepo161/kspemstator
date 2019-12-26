@@ -14,7 +14,7 @@ fun validateDB() {
 
     transaction {
 //        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
-        SchemaUtils.create(Users, ProtocolsTable, ObjectsTable)
+        SchemaUtils.create(Users, ProtocolsTable, ObjectsTable, ObjectsTypes)
     }
 
     transaction {
@@ -35,6 +35,10 @@ fun validateDB() {
                     density = "7800"
                     losses = "2.6"
                     intensity = "1.42"
+                }
+
+                ExperimentObjectsType.new {
+                    objectType = "тест"
                 }
             }
         }

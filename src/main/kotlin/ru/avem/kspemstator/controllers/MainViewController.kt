@@ -2,10 +2,7 @@ package ru.avem.kspemstator.controllers
 
 import javafx.scene.control.Alert
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.avem.kspemstator.database.entities.ExperimentObject
-import ru.avem.kspemstator.database.entities.ObjectsTable
-import ru.avem.kspemstator.database.entities.User
-import ru.avem.kspemstator.database.entities.Users
+import ru.avem.kspemstator.database.entities.*
 import ru.avem.kspemstator.view.MainView
 import tornadofx.Controller
 import tornadofx.observable
@@ -15,7 +12,7 @@ class MainViewController : Controller() {
 
 
     fun isValuesEmpty(): Boolean {
-        return  view.textFieldTypeObject.text.isNullOrEmpty() ||
+        return  view.comboboxTypeObject.selectionModel.isEmpty ||
                 view.textFieldFacNumber.text.isNullOrEmpty() ||
                 view.textFieldOutside.text.isNullOrEmpty() ||
                 view.textFieldInside.text.isNullOrEmpty() ||
@@ -46,6 +43,14 @@ class MainViewController : Controller() {
         view.comboBoxMark.items = transaction {
             ExperimentObject.find {
                 ObjectsTable.mark.isNotNull()
+            }.toList().observable()
+        }
+    }
+
+    fun refreshObjectsTypes() {
+        view.comboboxTypeObject.items = transaction {
+            ExperimentObjectsType.find {
+                ObjectsTypes.objectType.isNotNull()
             }.toList().observable()
         }
     }

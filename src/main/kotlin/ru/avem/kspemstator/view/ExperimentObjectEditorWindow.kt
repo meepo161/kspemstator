@@ -6,26 +6,26 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import ru.avem.kspemstator.controllers.AddExperimentObjectController
+import ru.avem.kspemstator.controllers.ExperimentObjectEditorController
 import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.ExperimentObject
 import ru.avem.kspemstator.database.entities.ObjectsTable
 import ru.avem.kspemstator.utils.Toast
 import tornadofx.*
 
-class AddExperimentObjectWindow : View("Добавить материал") {
+class ExperimentObjectEditorWindow : View("Добавить материал") {
     var textFieldMark: TextField by singleAssign()
     var textFieldDensity: TextField by singleAssign()
     var textfieldLosses: TextField by singleAssign()
     var textfieldIntensity: TextField by singleAssign()
     var tableViewObjects: TableView<ExperimentObject> by singleAssign()
 
-    private val controller: AddExperimentObjectController by inject()
+    private val experimentObjectEditorController: ExperimentObjectEditorController by inject()
     private val mainController: MainViewController by inject()
 
     override fun onBeforeShow() {
         modalStage!!.setOnHiding {
-            controller.refreshObjectsTable()
+            experimentObjectEditorController.refreshObjectsTable()
         }
     }
 
@@ -35,7 +35,7 @@ class AddExperimentObjectWindow : View("Добавить материал") {
             tableViewObjects = tableview {
                 columnResizePolicyProperty().set(TableView.CONSTRAINED_RESIZE_POLICY)
                 prefWidth = 900.0
-                items = controller.getObjects()
+                items = experimentObjectEditorController.getObjects()
 
                 column("Марка", ExperimentObject::mark) {
                     onEditCommit = EventHandler { cell ->
@@ -137,17 +137,17 @@ class AddExperimentObjectWindow : View("Добавить материал") {
 
                     button("Добавить") {
                         action {
-                            if (controller.addObject()) {
+                            if (experimentObjectEditorController.addObject()) {
                                 Toast.makeText("Новый объект добавлен.").show(Toast.ToastType.INFORMATION)
                             }
-                            controller.refreshObjectsTable()
+                            experimentObjectEditorController.refreshObjectsTable()
                             mainController.refreshObjects()
                         }
                     }
                     button("Удалить") {
                         action {
-                            controller.deleteObject()
-                            controller.refreshObjectsTable()
+                            experimentObjectEditorController.deleteObject()
+                            experimentObjectEditorController.refreshObjectsTable()
                             mainController.refreshObjects()
                         }
                     }

@@ -1,6 +1,7 @@
 package ru.avem.kspemstator.view
 
 import javafx.application.Platform
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.control.ComboBox
@@ -10,6 +11,7 @@ import javafx.scene.layout.VBox
 import javafx.stage.Modality
 import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.ExperimentObject
+import ru.avem.kspemstator.database.entities.ExperimentObjectsType
 import ru.avem.kspemstator.database.entities.User
 import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.Styles.Companion.medium
@@ -22,7 +24,8 @@ class MainView : View("Испытание активной стали стато
 
     var comboboxUserSelector: ComboBox<User> by singleAssign()
 
-    var textFieldTypeObject: TextField by singleAssign()
+    var comboboxTypeObject: ComboBox<ExperimentObjectsType> by singleAssign()
+
     var textFieldFacNumber: TextField by singleAssign()
     var textFieldOutside: TextField by singleAssign()
     var textFieldInside: TextField by singleAssign()
@@ -38,14 +41,29 @@ class MainView : View("Испытание активной стали стато
     private var textAreaCalculate: TextArea by singleAssign()
     private var textAreaExperiment: TextArea by singleAssign()
 
-    private val insulationList: ObservableList<String> = observableList("Лак", "Окидирование")
+    private val insulationList: ObservableList<String> = observableList("Лак", "Оксидирование")
     private val materialString: ObservableList<String> = observableList("Алюминий", "Сталь")
+
+    private val sliderForward = SimpleIntegerProperty(50)
+    private val sliderBack = SimpleIntegerProperty(50)
+
+    private var insideD: Double = 0.0
+    private var outsideD: Double = 0.0
+    private var l: Double = 0.0
+    private var h: Double = 0.0
+    private var lakt: Double = 0.0
+    private var lsr: Double = 0.0
+    private var sh: Double = 0.0
+    private var v: Double = 0.0
+    private var m: Double = 0.0
+    private var u: Double = 0.0
 
     override fun onDock() {
         comboBoxInsulation.items = insulationList
         comboBoxMaterial.items = materialString
         controller.refreshUsers()
         controller.refreshObjects()
+        controller.refreshObjectsTypes()
     }
 
     override val root = borderpane {
@@ -70,7 +88,15 @@ class MainView : View("Испытание активной стали стато
                     }
                     item("Материал") {
                         action {
-                            find<AddExperimentObjectWindow>().openModal(
+                            find<ExperimentObjectEditorWindow>().openModal(
+                                modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
+                                resizable = false, owner = this@MainView.currentWindow
+                            )
+                        }
+                    }
+                    item("Тип двигателя") {
+                        action {
+                            find<TypeEditorWindow>().openModal(
                                 modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
                                 resizable = false, owner = this@MainView.currentWindow
                             )
@@ -104,16 +130,13 @@ class MainView : View("Испытание активной стали стато
                         label("Испытатель")
                         comboboxUserSelector = combobox {
                             prefWidth = 200.0
-
                         }
-                        label("")
-                        label("ПАРАМЕТРЫ ДВИГАТЕЛЯ")
                         label("Тип двигателя:")
                         textFieldFacNumber = textfield {
 
                         }
                         label("Номер двигателя:")
-                        textFieldTypeObject = textfield {
+                        comboboxTypeObject = combobox {
 
                         }
                         label("Наружный диаметр:")
@@ -137,7 +160,7 @@ class MainView : View("Испытание активной стали стато
                             prefWidth = 200.0
 
                         }
-                        label("Марка материала:")
+                        label("Марка стали:")
                         comboBoxMark = combobox {
                             prefWidth = 200.0
 
@@ -146,6 +169,22 @@ class MainView : View("Испытание активной стали стато
                         comboBoxInsulation = combobox {
                             prefWidth = 200.0
 
+                        }
+                        label(sliderForward.stringBinding {
+                            "ШИМ вперед: ${sliderForward.value}%"
+                        })
+                        slider(0, 100, 1) {
+                            isShowTickLabels = true
+                            isShowTickMarks = true
+                            valueProperty().bindBidirectional(sliderForward)
+                        }
+                        label(sliderBack.stringBinding {
+                            "ШИМ назад: ${sliderBack.value}%"
+                        })
+                        slider(0, 100, 1) {
+                            isShowTickLabels = true
+                            isShowTickMarks = true
+                            valueProperty().bindBidirectional(sliderBack)
                         }
                     }
                     vBoxMain = vbox(spacing = 16.0) {
@@ -161,7 +200,7 @@ class MainView : View("Испытание активной стали стато
                                     }
                                 }.addClass(Styles.hard)
                                 textAreaCalculate = textarea {
-                                    prefHeight = 600.0
+                                    prefHeight = 760.0
 
                                 }
                             }
@@ -173,7 +212,7 @@ class MainView : View("Испытание активной стали стато
 
                                 }.addClass(Styles.hard)
                                 textAreaExperiment = textarea {
-                                    prefHeight = 600.0
+                                    prefHeight = 760.0
 
                                 }
                             }
@@ -201,29 +240,29 @@ class MainView : View("Испытание активной стали стато
             } else {
                 0.95
             }
-            val insideD: Double = textFieldInside.text.toDouble()
-            val outsideD: Double = textFieldOutside.text.toDouble()
-            val l: Double = textFieldIronLength.text.toDouble()
-            val h: Double = textFieldBackHeight.text.toDouble()
-            val lakt: Double = ki * l * 0.001
-            val lsr: Double = Math.PI * (outsideD - h) * 0.001
-            val sh: Double = lakt * h * 0.001
-            val v: Double = lsr * sh
-            val m: Double = v * p
-            val u: Double = 0.0
+            insideD = textFieldInside.text.toDouble() //TODO может понадобится
+            outsideD = textFieldOutside.text.toDouble()
+            l = textFieldIronLength.text.toDouble()
+            h = textFieldBackHeight.text.toDouble()
+            lakt = ki * l * 0.001
+            lsr = Math.PI * (outsideD - h) * 0.001
+            sh = lakt * h * 0.001
+            v = lsr * sh
+            m = v * p
+            u = 4.44 * 21 * 50 * sh
             Platform.runLater {
-                textAreaCalculate.text = "1.Длина активной стали (Lакт) в метрах:"
-                textAreaCalculate.text += "\nLакт = ki * L * 10-³ = " + String.format("%.4f м.", lakt)
-                textAreaCalculate.text += "\n2.Длина средней линии железа (Lср) в метрах:"
-                textAreaCalculate.text += "\nLср = π(D - h) * 10-³ = " + String.format("%.4f м.", lsr)
-                textAreaCalculate.text += "\n3.Сечение спинки Sh (м²)"
-                textAreaCalculate.text += "\nSh = Lакт * h * 10-³ = " + String.format("%.4f м².", sh)
-                textAreaCalculate.text += "\n4.Объем железа (V) (м³)"
-                textAreaCalculate.text += "\nV = Lср * Sh = " + String.format("%.4f м³.", v)
-                textAreaCalculate.text += "\n5.Масса железа (V) (кг)"
-                textAreaCalculate.text += "\nM = V * p = " + String.format("%.4f кг.", m)
-                textAreaCalculate.text += "\n6.Расчетное напряжение Uo"
-                textAreaCalculate.text += "\nUo = 250 * W * Bo * Sh * kr= " + String.format("%.4f В.", u)
+                textAreaCalculate.text = "1.Длина активной стали (Lакт) в метрах:" +
+                        "\nLакт = " + String.format("%.4f м.", lakt) +
+                        "\n2.Длина средней линии железа (Lср) в метрах:" +
+                        "\nLср = " + String.format("%.4f м.", lsr) +
+                        "\n3.Сечение спинки Sh (м²)" +
+                        "\nSh = " + String.format("%.4f м².", sh) +
+                        "\n4.Объем железа (V) (м³)" +
+                        "\nV = " + String.format("%.4f м³.", v) +
+                        "\n5.Масса железа (M) (кг)" +
+                        "\nM = " + String.format("%.4f кг.", m) +
+                        "\n6.Расчетное напряжение Uo" +
+                        "\nUo = " + String.format("%.4f В.", u)
 
                 Toast.makeText("Выполнен расчет").show(Toast.ToastType.INFORMATION)
             }
@@ -233,7 +272,7 @@ class MainView : View("Испытание активной стали стато
     }
 
     private fun clearTFs() {
-        textFieldTypeObject.text = ""
+        comboboxTypeObject.selectionModel.select(0)
         textFieldFacNumber.text = ""
         textFieldOutside.text = ""
         textFieldInside.text = ""

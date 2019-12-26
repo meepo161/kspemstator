@@ -6,21 +6,21 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.database.entities.ExperimentObject
 import ru.avem.kspemstator.database.entities.ObjectsTable
-import ru.avem.kspemstator.view.AddExperimentObjectWindow
+import ru.avem.kspemstator.view.ExperimentObjectEditorWindow
 import tornadofx.Controller
 import tornadofx.controlsfx.warningNotification
 import tornadofx.observable
 import tornadofx.selectedItem
 
-class AddExperimentObjectController : Controller() {
-    private val view: AddExperimentObjectWindow by inject()
+class ExperimentObjectEditorController : Controller() {
+    private val view: ExperimentObjectEditorWindow by inject()
 
     private var mark: String = ""
     private var density: Double = 0.0
     private var losses: Double = 0.0
     private var intensity: Double = 0.0
 
-    private val window: AddExperimentObjectWindow by inject()
+    private val editorWindow: ExperimentObjectEditorWindow by inject()
 
     private fun areFieldsValid(): Boolean {
         if (isValuesEmpty()) {
@@ -89,7 +89,7 @@ class AddExperimentObjectController : Controller() {
 
 
     fun deleteObject() {
-        val item = window.tableViewObjects.selectedItem
+        val item = editorWindow.tableViewObjects.selectedItem
         if (item != null) {
             transaction {
                 ObjectsTable.deleteWhere { ObjectsTable.mark eq item.mark }
@@ -98,7 +98,7 @@ class AddExperimentObjectController : Controller() {
     }
 
     fun refreshObjectsTable() {
-        window.tableViewObjects.items = getObjects()
+        editorWindow.tableViewObjects.items = getObjects()
     }
 
     fun getObjects(): ObservableList<ExperimentObject> {
