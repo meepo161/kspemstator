@@ -38,7 +38,14 @@ fun validateDB() {
                 }
 
                 ExperimentObjectsType.new {
-                    objectType = "тест"
+                    objectType = "111"
+                    insideD = "111"
+                    outsideD = "111"
+                    ironLength = "111"
+                    backHeight = "111"
+                    material = "Сталь"
+                    mark = "2212"
+                    insulation = "Лаковая"
                 }
             }
         }

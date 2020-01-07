@@ -4,13 +4,15 @@ import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextInputDialog
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.ExperimentObjectsType
+import ru.avem.kspemstator.database.entities.ObjectsTypes
 import ru.avem.kspemstator.utils.Toast
 import tornadofx.*
 
-class TypeEditorWindow : View("Редактор типов двигателя") {
+class ObjectTypeEditorWindow : View("Редактор типов двигателя") {
 
     var comboboxObjectsTypes: ComboBox<ExperimentObjectsType> by singleAssign()
     private val mainController: MainViewController by inject()
@@ -26,11 +28,14 @@ class TypeEditorWindow : View("Редактор типов двигателя") 
                 bottomAnchor = 16.0
             }
             hbox(spacing = 16.0) {
+                alignmentProperty().set(Pos.TOP_CENTER)
                 label("Выберите тип двигателя для удаления или добавьте новый")
             }
             hbox(spacing = 16.0) {
+                alignmentProperty().set(Pos.TOP_CENTER)
                 comboboxObjectsTypes = combobox {
                     prefWidth = 200.0
+                    items = getObjects()
                 }
 
             }
@@ -48,31 +53,51 @@ class TypeEditorWindow : View("Редактор типов двигателя") 
                             var name = result.get()
                             if (name.trim().isNotBlank()) {
                                 transaction {
-                                    ExperimentObjectsType.new {
-                                        objectType = name
+
+                                    val isSecondName = ExperimentObjectsType.find() {
+                                        ObjectsTypes.objectType eq name
+                                    }
+                                    if (isSecondName.empty()) {
+                                        ExperimentObjectsType.new {
+                                            objectType = name
+                                        }
+                                        Toast.makeText("Новый тип добавлен.").show(Toast.ToastType.INFORMATION)
+                                    } else {
+                                        Toast.makeText("Такой тип двигателя уже существует.").show(Toast.ToastType.ERROR)
                                     }
                                 }
                             }
                         }
-                        Toast.makeText("Новый объект добавлен.").show(Toast.ToastType.INFORMATION)
                         comboboxObjectsTypes.items = getObjects()
                         mainController.refreshObjectsTypes()
                     }
                 }
                 button("Удалить") {
                     action {
-                        comboboxObjectsTypes.items = getObjects()
+                        deleteObject()
                         mainController.refreshObjectsTypes()
+                        comboboxObjectsTypes.items = getObjects()
                     }
                 }
             }
         }
-    }
+    }.addClass(Styles.medium)
 
 
     fun getObjects(): ObservableList<ExperimentObjectsType> {
         return transaction {
             ExperimentObjectsType.all().toList().observable()
+        }
+    }
+
+    fun deleteObject() {
+        val item = comboboxObjectsTypes.selectionModel.selectedItem
+        if (item != null) {
+            transaction {
+                ObjectsTypes.deleteWhere() {
+                    ObjectsTypes.objectType eq item.objectType
+                }
+            }
         }
     }
 }

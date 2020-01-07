@@ -7,6 +7,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
+import javafx.scene.image.ImageView
 import javafx.scene.layout.VBox
 import javafx.stage.Modality
 import ru.avem.kspemstator.controllers.MainViewController
@@ -58,6 +59,13 @@ class MainView : View("Испытание активной стали стато
     private var m: Double = 0.0
     private var u: Double = 0.0
 
+    private var editIcon = ImageView("ru/avem/kspemstator/icon/edit.png")
+
+    override fun onBeforeShow() {
+        editIcon.fitHeight = 16.0
+        editIcon.fitWidth = 16.0
+    }
+
     override fun onDock() {
         comboBoxInsulation.items = insulationList
         comboBoxMaterial.items = materialString
@@ -67,7 +75,6 @@ class MainView : View("Испытание активной стали стато
     }
 
     override val root = borderpane {
-
         top {
             menubar {
                 menu("Меню") {
@@ -81,22 +88,6 @@ class MainView : View("Испытание активной стали стато
                     item("Испытатели") {
                         action {
                             find<UserEditorWindow>().openModal(
-                                modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
-                                resizable = false, owner = this@MainView.currentWindow
-                            )
-                        }
-                    }
-                    item("Материал") {
-                        action {
-                            find<ExperimentObjectEditorWindow>().openModal(
-                                modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
-                                resizable = false, owner = this@MainView.currentWindow
-                            )
-                        }
-                    }
-                    item("Тип двигателя") {
-                        action {
-                            find<TypeEditorWindow>().openModal(
                                 modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
                                 resizable = false, owner = this@MainView.currentWindow
                             )
@@ -132,11 +123,12 @@ class MainView : View("Испытание активной стали стато
                             prefWidth = 200.0
                         }
                         label("Тип двигателя:")
-                        textFieldFacNumber = textfield {
-
+                        comboboxTypeObject = combobox {
+                            prefWidth = 200.0
+                            isEditable = true
                         }
                         label("Номер двигателя:")
-                        comboboxTypeObject = combobox {
+                        textFieldFacNumber = textfield {
 
                         }
                         label("Наружный диаметр:")
@@ -161,12 +153,30 @@ class MainView : View("Испытание активной стали стато
 
                         }
                         label("Марка стали:")
-                        comboBoxMark = combobox {
-                            prefWidth = 200.0
+                        hbox(spacing = 8) {
+                            comboBoxMark = combobox {
+                                prefWidth = 160.0
 
+                            }
+                            button("", editIcon) {
+                                action {
+                                    find<ExperimentObjectEditorWindow>().openModal(
+                                        modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
+                                        resizable = false, owner = this@MainView.currentWindow
+                                    )
+                                }
+                            }
                         }
                         label("Тип изоляции:")
                         comboBoxInsulation = combobox {
+                            prefWidth = 200.0
+
+                        }
+                        button("Автовыбор стали") {
+                            prefWidth = 200.0
+
+                        }
+                        button("Сохранить") {
                             prefWidth = 200.0
 
                         }
