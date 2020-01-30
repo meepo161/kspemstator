@@ -14,7 +14,7 @@ fun validateDB() {
 
     transaction {
 //        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
-        SchemaUtils.create(Users, ProtocolsTable, ObjectsTable, ObjectsTypes)
+        SchemaUtils.create(Users, ProtocolsTable, ObjectsTypes, MarksTypes)
     }
 
     transaction {
@@ -30,22 +30,32 @@ fun validateDB() {
                     fullName = "admin"
                 }
 
-                ExperimentObject.new {
-                    mark = "2212"
-                    density = "7800"
-                    losses = "2.6"
-                    intensity = "1.42"
-                }
 
                 ExperimentObjectsType.new {
                     objectType = "111"
-                    insideD = "111"
-                    outsideD = "111"
-                    ironLength = "111"
-                    backHeight = "111"
+                    outsideD = "222"
+                    insideD = "333"
+                    ironLength = "444"
+                    backHeight = "555"
                     material = "Сталь"
-                    mark = "2212"
-                    insulation = "Лаковая"
+                    insulation = "Лак"
+                }
+
+                ExperimentObjectsType.new {
+                    objectType = "2222"
+                    outsideD = "3333"
+                    insideD = "4444"
+                    ironLength = "5555"
+                    backHeight = "6666"
+                    material = "Алюминий"
+                    insulation = "Оксидирование"
+                }
+
+                MarksObjects.new {
+                    mark = "2222"
+                    density = "3333"
+                    losses = "4444"
+                    intensity = "5555"
                 }
             }
         }

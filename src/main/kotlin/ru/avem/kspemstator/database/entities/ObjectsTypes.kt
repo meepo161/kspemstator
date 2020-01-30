@@ -13,7 +13,7 @@ object ObjectsTypes:  IntIdTable() {
     val backHeight = varchar("backHeight", 32)
     val material = varchar("material", 32)
     val insulation = varchar("insulation", 32)
-    val mark = varchar("mark", 32)
+
 }
 
 class ExperimentObjectsType(id: EntityID<Int>): IntEntity(id) {
@@ -25,7 +25,6 @@ class ExperimentObjectsType(id: EntityID<Int>): IntEntity(id) {
     var backHeight by ObjectsTypes.backHeight
     var material by ObjectsTypes.material
     var insulation by ObjectsTypes.insulation
-    var mark by ObjectsTypes.mark
 
     override fun toString(): String {
         return objectType

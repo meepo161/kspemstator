@@ -4,23 +4,23 @@ import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.avem.kspemstator.database.entities.ExperimentObject
-import ru.avem.kspemstator.database.entities.ObjectsTable
-import ru.avem.kspemstator.view.ExperimentObjectEditorWindow
+import ru.avem.kspemstator.database.entities.MarksObjects
+import ru.avem.kspemstator.database.entities.MarksTypes
+import ru.avem.kspemstator.view.AddMarkWindow
 import tornadofx.Controller
 import tornadofx.controlsfx.warningNotification
 import tornadofx.observable
 import tornadofx.selectedItem
 
-class ExperimentObjectEditorController : Controller() {
-    private val view: ExperimentObjectEditorWindow by inject()
+class AddMarkController : Controller() {
 
     private var mark: String = ""
     private var density: Double = 0.0
     private var losses: Double = 0.0
     private var intensity: Double = 0.0
 
-    private val editorWindow: ExperimentObjectEditorWindow by inject()
+    private val window: AddMarkWindow by inject()
+    private val view: MainViewController by inject()
 
     private fun areFieldsValid(): Boolean {
         if (isValuesEmpty()) {
@@ -45,18 +45,18 @@ class ExperimentObjectEditorController : Controller() {
     }
 
     private fun isValuesEmpty(): Boolean {
-        return view.textFieldMark.text.isNullOrEmpty() ||
-                view.textFieldDensity.text.isNullOrEmpty() ||
-                view.textfieldLosses.text.isNullOrEmpty() ||
-                view.textfieldIntensity.text.isNullOrEmpty()
+        return window.textFieldMark.text.isNullOrEmpty() ||
+                window.textFieldDensity.text.isNullOrEmpty() ||
+                window.textfieldLosses.text.isNullOrEmpty() ||
+                window.textfieldIntensity.text.isNullOrEmpty()
     }
 
     private fun isInvalidData(): Boolean {
         try {
-            mark = view.textFieldMark.text
-            density = view.textFieldDensity.text.toDouble()
-            losses = view.textfieldLosses.text.toDouble()
-            intensity = view.textfieldIntensity.text.toDouble()
+            mark = window.textFieldMark.text
+            density = window.textFieldDensity.text.toDouble()
+            losses = window.textfieldLosses.text.toDouble()
+            intensity = window.textfieldIntensity.text.toDouble()
         } catch (e: NumberFormatException) {
             return true
         }
@@ -67,20 +67,21 @@ class ExperimentObjectEditorController : Controller() {
         return if (areFieldsValid()) {
             transaction {
 
-                val markDouble = ExperimentObject.find() {
-                    ObjectsTable.mark eq view.textFieldMark.text
+                val markDouble = MarksObjects.find() {
+                    MarksTypes.mark eq window.textFieldMark.text
                 }
 
                 if (markDouble.empty()) {
-                    ExperimentObject.new {
-                        mark = view.textFieldMark.text
-                        density = view.textFieldDensity.text
-                        losses = view.textfieldLosses.text
-                        intensity = view.textfieldIntensity.text
+                    MarksObjects.new {
+                        mark = window.textFieldMark.text
+                        density = window.textFieldDensity.text
+                        losses = window.textfieldLosses.text
+                        intensity = window.textfieldIntensity.text
                     }
                 }
             }
             clearViews()
+            view.refreshMarks()
             true
         } else {
             false
@@ -89,28 +90,29 @@ class ExperimentObjectEditorController : Controller() {
 
 
     fun deleteObject() {
-        val item = editorWindow.tableViewObjects.selectedItem
+        val item = window.tableViewObjects.selectedItem
         if (item != null) {
             transaction {
-                ObjectsTable.deleteWhere { ObjectsTable.mark eq item.mark }
+                MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
             }
         }
+        view.refreshMarks()
     }
 
-    fun refreshObjectsTable() {
-        editorWindow.tableViewObjects.items = getObjects()
+    fun refreshMarksTypes() {
+        window.tableViewObjects.items = getObjects()
     }
 
-    fun getObjects(): ObservableList<ExperimentObject> {
+    fun getObjects(): ObservableList<MarksObjects> {
         return transaction {
-            ExperimentObject.all().toList().observable()
+            MarksObjects.all().toList().observable()
         }
     }
 
     private fun clearViews() {
-        view.textFieldMark.clear()
-        view.textFieldDensity.clear()
-        view.textfieldLosses.clear()
-        view.textfieldIntensity.clear()
+        window.textFieldMark.clear()
+        window.textFieldDensity.clear()
+        window.textfieldLosses.clear()
+        window.textfieldIntensity.clear()
     }
 }

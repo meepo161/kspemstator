@@ -6,6 +6,7 @@ import tornadofx.*
 
 class Styles : Stylesheet() {
     companion object {
+        val baseColorFoo by cssclass()
         val medium by cssclass()
         val hard by cssclass()
         val extraHard by cssclass()
@@ -19,16 +20,23 @@ class Styles : Stylesheet() {
     }
 
     init {
+
+        baseColorFoo {
+            baseColor = c("#0f4c81")
+        }
+
         medium {
-            fontSize = 14.px
+            fontSize = 21.px
+            fontWeight = FontWeight.BOLD
         }
 
         hard {
-            fontSize = 18.px
+            fontSize = 26.px
+            fontWeight = FontWeight.BOLD
         }
 
         extraHard {
-            fontSize = 26.px
+            fontSize = 32.px
             fontWeight = FontWeight.EXTRA_BOLD
         }
 
