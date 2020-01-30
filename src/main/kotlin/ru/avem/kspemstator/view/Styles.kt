@@ -26,7 +26,7 @@ class Styles : Stylesheet() {
         }
 
         medium {
-            fontSize = 21.px
+            fontSize = 22.px
             fontWeight = FontWeight.BOLD
         }
 

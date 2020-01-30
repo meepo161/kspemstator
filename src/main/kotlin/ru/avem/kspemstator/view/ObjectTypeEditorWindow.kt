@@ -17,8 +17,8 @@ class ObjectTypeEditorWindow : View("Редактор типов двигате�
     var comboboxObjectsTypes: ComboBox<ExperimentObjectsType> by singleAssign()
     private val mainController: MainViewController by inject()
 
-
     override val root = anchorpane {
+
         vbox(spacing = 16.0) {
             alignmentProperty().set(Pos.TOP_CENTER)
             anchorpaneConstraints {

@@ -126,17 +126,17 @@ class MainView : View("Испытание активной стали стато
         center {
             anchorpane {
                 hbox(spacing = 16.0) {
-                    alignmentProperty().set(Pos.CENTER)
                     anchorpaneConstraints {
                         leftAnchor = 16.0
                         rightAnchor = 16.0
                         topAnchor = 16.0
                         bottomAnchor = 16.0
                     }
+                    alignment = Pos.CENTER
                     vBoxEdit = vbox(spacing = 4.0) {
                         minWidth = 300.0
                         prefWidth = 300.0
-                        alignmentProperty().set(Pos.TOP_CENTER)
+                        alignmentProperty().set(Pos.CENTER)
                         label("Испытатель")
                         comboboxUserSelector = combobox {
                             prefWidth = 240.0
@@ -150,7 +150,7 @@ class MainView : View("Испытание активной стали стато
                             }
                         }
                         hbox(spacing = 16.0) {
-                            alignmentProperty().set(Pos.TOP_CENTER)
+                            alignmentProperty().set(Pos.CENTER)
                             button("", addIcon) {
                                 action {
                                     handleAddTestItem()
@@ -231,25 +231,25 @@ class MainView : View("Испытание активной стали стато
 
 //                        hbox(spacing = 4.0) {
 //                            alignmentProperty().set(Pos.TOP_CENTER)
-//                            button("ВВЕРХ") {
+//                            button("UP") {
 //                                action {
+//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
 //                                    CommunicationModel.owenPR200Controller.onRegisterInKMS(UP)
 //                                }
 //                            }
-//                            button("ВНИЗ") {
+//                            button("DOWN") {
 //                                action {
+//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
 //                                    CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
 //                                }
 //                            }
-//                            button("СТОП") {
+//                            button("STOP") {
 //                                action {
 //                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
 //                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
 //                                }
 //                            }
 //                        }
-
-
 //                        label(sliderForward.stringBinding {
 //                            "ШИМ вперед: ${sliderForward.value}%"
 //                        })
@@ -268,10 +268,10 @@ class MainView : View("Испытание активной стали стато
 //                        }
                     }
                     vBoxMain = vbox(spacing = 16.0) {
-                        alignmentProperty().set(Pos.TOP_CENTER)
+                        alignmentProperty().set(Pos.CENTER)
                         hbox(spacing = 32.0) {
                             vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.TOP_CENTER)
+                                alignmentProperty().set(Pos.CENTER)
                                 buttonCalculation = button("Расчет") {
                                     prefWidth = 300.0
                                     action {
@@ -283,7 +283,7 @@ class MainView : View("Испытание активной стали стато
                                 }.addClass(Styles.hard)
                             }
                             vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.TOP_CENTER)
+                                alignmentProperty().set(Pos.CENTER)
                                 buttonStartExperiment = button("Испытание") {
                                     prefWidth = 300.0
                                     action {
@@ -297,7 +297,7 @@ class MainView : View("Испытание активной стали стато
                                 hbox(spacing = 16.0) {
                                     alignmentProperty().set(Pos.CENTER)
                                     vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.TOP_CENTER)
+                                        alignmentProperty().set(Pos.CENTER)
                                         label("Uo расч, В") {
                                         }.addClass(Styles.hard)
                                         textFieldU = textfield {
@@ -306,7 +306,7 @@ class MainView : View("Испытание активной стали стато
                                         }.addClass(Styles.hard)
                                     }
                                     vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.TOP_CENTER)
+                                        alignmentProperty().set(Pos.CENTER)
                                         label("Ui изм, В") {
                                         }.addClass(Styles.hard)
                                         textFieldU2 = textfield {
@@ -314,7 +314,7 @@ class MainView : View("Испытание активной стали стато
                                         }.addClass(Styles.hard)
                                     }
                                     vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.TOP_CENTER)
+                                        alignmentProperty().set(Pos.CENTER)
                                         label("Uн намаг, В") {
                                         }.addClass(Styles.hard)
                                         textFieldU1 = textfield {
@@ -322,7 +322,7 @@ class MainView : View("Испытание активной стали стато
                                         }.addClass(Styles.hard)
                                     }
                                     vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.TOP_CENTER)
+                                        alignmentProperty().set(Pos.CENTER)
                                         label("Iн намаг, А") {
                                         }.addClass(Styles.hard)
                                         textFieldI1 = textfield {
@@ -330,7 +330,7 @@ class MainView : View("Испытание активной стали стато
                                         }.addClass(Styles.hard)
                                     }
                                     vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.TOP_CENTER)
+                                        alignmentProperty().set(Pos.CENTER)
                                         label("Pн акт, Вт") {
                                         }.addClass(Styles.hard)
                                         textFieldP1 = textfield {
@@ -345,7 +345,7 @@ class MainView : View("Испытание активной стали стато
                         }
                         hBoxResult = hbox(spacing = 32.0) {
                             vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.TOP_CENTER)
+                                alignmentProperty().set(Pos.CENTER)
                                 label("Общие данные:") {
                                 }.addClass(Styles.hard)
                                 textAreaTotalInfo = textarea {
@@ -353,7 +353,7 @@ class MainView : View("Испытание активной стали стато
                                 }.addClass(Styles.hard)
                             }
                             vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.TOP_CENTER)
+                                alignmentProperty().set(Pos.CENTER)
                                 label("Результаты испытания:") {
                                 }.addClass(Styles.hard)
                                 textAreaResults = textarea {

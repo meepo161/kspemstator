@@ -235,6 +235,24 @@ class MainViewController : Controller() {
         }
     }
 
+    private fun showResults() {
+        val bf = measuringIB / (4.44 * 22 * 50 * sh)
+        val pf = measuringPA * (21 / 22) * (1.0 / (bf * bf))
+        val pt = pf / m
+        val hf = (measuringIA * 21) / lsr
+
+//        if (cause == "") {
+            view.textAreaResults.text = "1.Фактическая индукция:" +
+                    "\nBf = " + String.format("%.4f bf = measuringIB / (4.44 * 22 * 50 * sh) ", bf) +
+                    "\n2.Фактическая активная мощность" +
+                    "\nPf = " + String.format("%.4f measuringPA * (21 / 22) * (1.0 / (bf * bf))", pf) +
+                    "\n3.Удельные потери" +
+                    "\nPt = " + String.format("%.4f  pf / m", pt) +
+                    "\n4.Напряженность" +
+                    "\nHf = " + String.format("%.4f  v = lsr * sh", hf)
+//        }
+    }
+
     fun stopExperiment() {
         setCause("Отменено оператором")
         isExperimentRunning = false
@@ -384,21 +402,8 @@ class MainViewController : Controller() {
                 appendOneMessageToLog("Испытание завершено успешно")
             }
 
-            val bf = measuringIB / (4.44 * 22 * 50 * sh)
-            val pf = measuringPA * (21 / 22) * (1.0 / (bf * bf))
-            val pt = pf / m
-            val hf = (measuringIA * 21) / lsr
+            showResults()
 
-            if (cause == "") {
-                view.textAreaResults.text = "1.Фактическая мощность:" +
-                        "\nBf = " + String.format("%.4f bf = measuringIB / (4.44 * 22 * 50 * sh) ", bf) +
-                        "\n2.Фактическая активная мощность" +
-                        "\nPf = " + String.format("%.4f measuringPA * (21 / 22) * (1.0 / (bf * bf))", pf) +
-                        "\n3.Удельные потери" +
-                        "\nPt = " + String.format("%.4f  pf / m", pt) +
-                        "\n4.Напряженность" +
-                        "\nHf = " + String.format("%.4f  v = lsr * sh", hf)
-            }
             Platform.runLater {
                 view.vBoxEdit.isDisable = false
                 view.buttonCalculation.isDisable = false

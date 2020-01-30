@@ -94,5 +94,5 @@ class UserAddWindow : View("Добавить пользователя") {
                 }
             }
         }
-    }.addClass(Styles.medium)
+    }.addClass(Styles.medium, Styles.baseColorFoo)
 }

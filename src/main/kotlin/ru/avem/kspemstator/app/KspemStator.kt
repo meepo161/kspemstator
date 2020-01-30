@@ -19,7 +19,7 @@ class KspemStator : App(MainView::class, Styles::class) {
     }
 
     override fun start(stage: Stage) {
-        stage.isFullScreen = false
+        stage.isFullScreen = true
         stage.isResizable = false
         stage.fullScreenExitKeyCombination = KeyCombination.NO_MATCH
         stage.initStyle(StageStyle.TRANSPARENT)

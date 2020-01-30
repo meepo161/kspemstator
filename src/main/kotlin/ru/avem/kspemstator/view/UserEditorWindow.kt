@@ -118,7 +118,7 @@ class UserEditorWindow : View("Редактор пользователей") {
                         }
                     }
                 }
-            }.addClass(Styles.medium)
+            }.addClass(Styles.medium, Styles.baseColorFoo)
         }
     }
 }

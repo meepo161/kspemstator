@@ -168,5 +168,4 @@ class AddMarkWindow : View("Добавить материал") {
             requestFocus()
         }
     }
-
 }

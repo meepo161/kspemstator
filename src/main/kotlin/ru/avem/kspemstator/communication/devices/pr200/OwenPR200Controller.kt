@@ -21,10 +21,14 @@ class OwenPR200Controller(private val unitID: UnitID, observer: Observer) : Obse
         private val logger = LoggerFactory.getLogger(this::class.java)
 
         const val KMS_REG = 516
-        const val SPEED_UP = 513
-        const val SPEED_DOWN = 514
         const val PROTECTIONS_STATES_REG = 512
         const val WATCHDOG_REG = 520
+
+
+        const val UP_ON = 513
+        const val DOWN_ON = 514
+        const val UP_OFF = 518
+        const val DOWN_OFF = 519
 
         const val POWER: Short = 1
         const val DO2: Short = 2
@@ -68,12 +72,12 @@ class OwenPR200Controller(private val unitID: UnitID, observer: Observer) : Obse
         }
     }
 
-    fun setUPSpeed(upSpeed: Int) {
-        val speed: Int = upSpeed
+    fun setUPOn(upOn: Float) {
+        val speed: Float = upOn
         try {
             ModbusConnection.writeSingleRegister(
                 unitID.id,
-                SPEED_UP,
+                UP_ON,
                 SimpleRegister(speed)
             )
         } catch (e: Exception) {
@@ -81,12 +85,38 @@ class OwenPR200Controller(private val unitID: UnitID, observer: Observer) : Obse
         }
     }
 
-    fun setDownSpeed(downSpeed: Int) {
-        val speed: Int = downSpeed
+    fun setUPOff(upOff: Float) {
+        val speed: Float = upOff
         try {
             ModbusConnection.writeSingleRegister(
                 unitID.id,
-                SPEED_DOWN,
+                UP_OFF,
+                SimpleRegister(speed)
+            )
+        } catch (e: Exception) {
+            isResponding = false
+        }
+    }
+
+    fun setDownOn(downOn: Float) {
+        val speed: Float = downOn
+        try {
+            ModbusConnection.writeSingleRegister(
+                unitID.id,
+                DOWN_ON,
+                SimpleRegister(speed)
+            )
+        } catch (e: Exception) {
+            isResponding = false
+        }
+    }
+
+    fun setDownOff(downOff: Float) {
+        val speed: Float = downOff
+        try {
+            ModbusConnection.writeSingleRegister(
+                unitID.id,
+                DOWN_OFF,
                 SimpleRegister(speed)
             )
         } catch (e: Exception) {
