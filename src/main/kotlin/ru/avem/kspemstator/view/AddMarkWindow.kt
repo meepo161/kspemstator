@@ -6,26 +6,27 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import ru.avem.kspemstator.controllers.ExperimentObjectEditorController
-import ru.avem.kspemstator.controllers.MainViewController
-import ru.avem.kspemstator.database.entities.ExperimentObject
-import ru.avem.kspemstator.database.entities.ObjectsTable
+import ru.avem.kspemstator.controllers.AddMarkController
+import ru.avem.kspemstator.database.entities.MarksObjects
+import ru.avem.kspemstator.database.entities.MarksTypes
 import ru.avem.kspemstator.utils.Toast
 import tornadofx.*
+import java.awt.Desktop
+import java.nio.file.Paths
 
-class ExperimentObjectEditorWindow : View("Добавить материал") {
+class AddMarkWindow : View("Добавить материал") {
     var textFieldMark: TextField by singleAssign()
     var textFieldDensity: TextField by singleAssign()
     var textfieldLosses: TextField by singleAssign()
     var textfieldIntensity: TextField by singleAssign()
-    var tableViewObjects: TableView<ExperimentObject> by singleAssign()
+    var tableViewObjects: TableView<MarksObjects> by singleAssign()
 
-    private val experimentObjectEditorController: ExperimentObjectEditorController by inject()
-    private val mainController: MainViewController by inject()
+    private val controller: AddMarkController by inject()
+    private val mainView: MainView by inject()
 
     override fun onBeforeShow() {
         modalStage!!.setOnHiding {
-            experimentObjectEditorController.refreshObjectsTable()
+//            controller.refreshObjectsTable()
         }
     }
 
@@ -35,13 +36,13 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
             tableViewObjects = tableview {
                 columnResizePolicyProperty().set(TableView.CONSTRAINED_RESIZE_POLICY)
                 prefWidth = 900.0
-                items = experimentObjectEditorController.getObjects()
+                items = controller.getObjects()
 
-                column("Марка", ExperimentObject::mark) {
+                column("Марка", MarksObjects::mark) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
-                            ObjectsTable.update({
-                                ObjectsTable.mark eq selectedItem!!.mark
+                            MarksTypes.update({
+                                MarksTypes.mark eq selectedItem!!.mark
                             }) {
                                 it[mark] = cell.newValue
                             }
@@ -49,11 +50,11 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     }
                 }
 
-                column("Плотность", ExperimentObject::density) {
+                column("Плотность", MarksObjects::density) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
-                            ObjectsTable.update({
-                                ObjectsTable.density eq selectedItem!!.density
+                            MarksTypes.update({
+                                MarksTypes.density eq selectedItem!!.density
                             }) {
                                 it[density] = cell.newValue
                             }
@@ -61,11 +62,11 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     }
                 }
 
-                column("Потери", ExperimentObject::losses) {
+                column("Потери", MarksObjects::losses) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
-                            ObjectsTable.update({
-                                ObjectsTable.losses eq selectedItem!!.losses
+                            MarksTypes.update({
+                                MarksTypes.losses eq selectedItem!!.losses
                             }) {
                                 it[losses] = cell.newValue
                             }
@@ -73,11 +74,11 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     }
                 }
 
-                column("Напряженность", ExperimentObject::intensity) {
+                column("Напряженность", MarksObjects::intensity) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
-                            ObjectsTable.update({
-                                ObjectsTable.intensity eq selectedItem!!.intensity
+                            MarksTypes.update({
+                                MarksTypes.intensity eq selectedItem!!.intensity
                             }) {
                                 it[intensity] = cell.newValue
                             }
@@ -102,6 +103,7 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     label("Марка стали:")
                     textFieldMark = textfield {
                         prefWidth = 200.0
+                        callKeyBoard()
                     }
                 }
 
@@ -111,6 +113,7 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     label("Плотность стали, кг/м³:")
                     textFieldDensity = textfield {
                         prefWidth = 200.0
+                        callKeyBoard()
                     }
                 }
 
@@ -120,6 +123,7 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     label("Удельные потери, Вт/кг:")
                     textfieldLosses = textfield {
                         prefWidth = 200.0
+                        callKeyBoard()
                     }
                 }
 
@@ -129,6 +133,7 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
                     label("Напряженность, А/м")
                     textfieldIntensity = textfield {
                         prefWidth = 200.0
+                        callKeyBoard()
                     }
                 }
 
@@ -137,23 +142,31 @@ class ExperimentObjectEditorWindow : View("Добавить материал") {
 
                     button("Добавить") {
                         action {
-                            if (experimentObjectEditorController.addObject()) {
+                            if (controller.addObject()) {
                                 Toast.makeText("Новый объект добавлен.").show(Toast.ToastType.INFORMATION)
                             }
-                            experimentObjectEditorController.refreshObjectsTable()
-                            mainController.refreshObjects()
+                            controller.refreshMarksTypes()
+//                            mainController.refreshObjects()
                         }
                     }
                     button("Удалить") {
                         action {
-                            experimentObjectEditorController.deleteObject()
-                            experimentObjectEditorController.refreshObjectsTable()
-                            mainController.refreshObjects()
+                            controller.deleteObject()
+                            controller.refreshMarksTypes()
+//                            mainController.refreshObjects()
                         }
                     }
                 }
             }
         }
-    }.addClass(Styles.medium)
+    }.addClass(Styles.medium, Styles.baseColorFoo)
+
+    fun TextField.callKeyBoard() {
+        onTouchPressed = EventHandler {
+            Desktop.getDesktop()
+                .open(Paths.get("C:/Program Files/Common Files/Microsoft Shared/ink/TabTip.exe").toFile())
+            requestFocus()
+        }
+    }
 
 }
