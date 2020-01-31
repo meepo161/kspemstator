@@ -39,6 +39,7 @@ fun validateDB() {
                     backHeight = "555"
                     material = "Сталь"
                     insulation = "Лак"
+                    mark = "2222"
                 }
 
                 ExperimentObjectsType.new {
@@ -49,6 +50,7 @@ fun validateDB() {
                     backHeight = "6666"
                     material = "Алюминий"
                     insulation = "Оксидирование"
+                    mark = "2222"
                 }
 
                 MarksObjects.new {

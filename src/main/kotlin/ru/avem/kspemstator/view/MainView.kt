@@ -1,6 +1,5 @@
 package ru.avem.kspemstator.view
 
-import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
@@ -30,18 +29,10 @@ class MainView : View("Испытание активной стали стато
     var comboboxTypeObject: ComboBox<ExperimentObjectsType> by singleAssign()
 
     var textFieldFacNumber: TextField by singleAssign()
-    var textFieldOutside: TextField by singleAssign()
-    var textFieldInside: TextField by singleAssign()
-    var textFieldIronLength: TextField by singleAssign()
-    var textFieldBackHeight: TextField by singleAssign()
-    var comboboxMark: ComboBox<MarksObjects> by singleAssign()
-
-    var comboBoxMaterial: ComboBox<String> by singleAssign()
-    var comboBoxInsulation: ComboBox<String> by singleAssign()
 
     private var vBoxMain: VBox by singleAssign()
     private var hBoxResult: HBox by singleAssign()
-    var vBoxEdit: VBox by singleAssign()
+    var hboxEdit: HBox by singleAssign()
 
     var textAreaCalculate: TextArea by singleAssign()
     var textAreaExperiment: TextArea by singleAssign()
@@ -50,9 +41,6 @@ class MainView : View("Испытание активной стали стато
 
     var buttonStartExperiment: Button by singleAssign()
     var buttonCalculation: Button by singleAssign()
-
-    private val insulationList: ObservableList<String> = observableList("Лак", "Оксидирование")
-    private val materialString: ObservableList<String> = observableList("Алюминий", "Сталь")
 
     private lateinit var currentItem: ExperimentObjectsType
 
@@ -77,11 +65,8 @@ class MainView : View("Испытание активной стали стато
     }
 
     override fun onDock() {
-        comboBoxInsulation.items = insulationList
-        comboBoxMaterial.items = materialString
-        controller.refreshUsers()
         controller.refreshObjectsTypes()
-        controller.refreshMarks()
+        buttonStartExperiment.isDisable = true
     }
 
     override val root = borderpane {
@@ -110,6 +95,22 @@ class MainView : View("Испытание активной стали стато
                             )
                         }
                     }
+                    item("Типы двигателя") {
+                        action {
+                            find<ObjectTypeEditorWindow>().openModal(
+                                modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
+                                resizable = false, owner = this@MainView.currentWindow
+                            )
+                        }
+                    }
+                    item("Марки стали") {
+                        action {
+                            find<AddMarkWindow>().openModal(
+                                modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
+                                resizable = false, owner = this@MainView.currentWindow
+                            )
+                        }
+                    }
                     item("Протоколы") {
 
                     }
@@ -125,109 +126,36 @@ class MainView : View("Испытание активной стали стато
         }
         center {
             anchorpane {
-                hbox(spacing = 16.0) {
+                vbox(spacing = 32.0) {
                     anchorpaneConstraints {
                         leftAnchor = 16.0
                         rightAnchor = 16.0
                         topAnchor = 16.0
                         bottomAnchor = 16.0
                     }
-                    alignment = Pos.CENTER
-                    vBoxEdit = vbox(spacing = 4.0) {
+                    hboxEdit = hbox(spacing = 16.0) {
                         minWidth = 300.0
                         prefWidth = 300.0
                         alignmentProperty().set(Pos.CENTER)
-                        label("Испытатель")
-                        comboboxUserSelector = combobox {
-                            prefWidth = 240.0
-                        }
+
                         label("Тип двигателя:")
                         comboboxTypeObject = combobox {
-                            prefWidth = 240.0
-//                            isEditable = true
-                            onAction = EventHandler {
-                                fillFields(selectedItem ?: items.first())
-                            }
+                            prefWidth = 300.0
                         }
-                        hbox(spacing = 16.0) {
-                            alignmentProperty().set(Pos.CENTER)
-                            button("", addIcon) {
-                                action {
-                                    handleAddTestItem()
-                                }
-                            }
-                            button("", deleteIcon) {
-                                action {
-                                    controller.deleteTestItem()
-                                }
-                            }
-
-                        }.addClass(Styles.medium)
                         label("Номер двигателя:")
                         textFieldFacNumber = textfield {
-                            prefWidth = 240.0
-                            maxWidth = 240.0
+                            prefWidth = 300.0
                             callKeyBoard()
-                        }.addClass(Styles.medium)
-                        label("Наружный диаметр:")
-                        textFieldOutside = textfield {
-                            prefWidth = 240.0
-                            maxWidth = 240.0
-                            callKeyBoard()
-                        }.addClass(Styles.medium)
-                        label("Внутренний диаметр:")
-                        textFieldInside = textfield {
-                            prefWidth = 240.0
-                            maxWidth = 240.0
-                            callKeyBoard()
-                        }.addClass(Styles.medium)
-                        label("Длина железа:")
-                        textFieldIronLength = textfield {
-                            prefWidth = 240.0
-                            maxWidth = 240.0
-                            callKeyBoard()
-                        }.addClass(Styles.medium)
-                        label("Высота спинки:")
-                        textFieldBackHeight = textfield {
-                            prefWidth = 240.0
-                            maxWidth = 240.0
-                            callKeyBoard()
-                        }.addClass(Styles.medium)
-                        label("Материал станины:")
-                        comboBoxMaterial = combobox {
-                            prefWidth = 240.0
-
+                        }.addClass(medium)
+                    }
+                    hbox(spacing = 16.0) {
+                        anchorpaneConstraints {
+                            leftAnchor = 16.0
+                            rightAnchor = 16.0
+                            topAnchor = 16.0
+                            bottomAnchor = 16.0
                         }
-                        label("Марка стали:")
-                        hbox(spacing = 4.0) {
-                            alignment = Pos.CENTER
-                            comboboxMark = combobox<MarksObjects> {
-                                prefWidth = 190.0
-                                maxWidth = 190.0
-                            }.addClass(Styles.medium)
-                            button("", editIcon) {
-                                action {
-                                    find<AddMarkWindow>().openModal(
-                                        modality = Modality.WINDOW_MODAL, escapeClosesWindow = true,
-                                        resizable = false, owner = this@MainView.currentWindow
-                                    )
-                                }
-                            }
-                        }
-                        label("Тип изоляции:")
-                        comboBoxInsulation = combobox {
-                            prefWidth = 240.0
-                        }
-                        button("Автовыбор стали") {
-                            prefWidth = 240.0
-
-                        }
-                        button("Сохранить") {
-                            prefWidth = 240.0
-                            action {
-                                controller.save()
-                            }
-                        }
+                        alignment = Pos.CENTER
 
 //                        hbox(spacing = 4.0) {
 //                            alignmentProperty().set(Pos.TOP_CENTER)
@@ -266,99 +194,104 @@ class MainView : View("Испытание активной стали стато
 //                            isShowTickMarks = true
 //                            valueProperty().bindBidirectional(sliderBack)
 //                        }
-                    }
-                    vBoxMain = vbox(spacing = 16.0) {
-                        alignmentProperty().set(Pos.CENTER)
-                        hbox(spacing = 32.0) {
-                            vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.CENTER)
-                                buttonCalculation = button("Расчет") {
-                                    prefWidth = 300.0
-                                    action {
-                                        controller.calculate()
-                                    }
-                                }.addClass(Styles.hard)
-                                textAreaCalculate = textarea {
-                                    prefHeight = 440.0
-                                }.addClass(Styles.hard)
-                            }
-                            vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.CENTER)
-                                buttonStartExperiment = button("Испытание") {
-                                    prefWidth = 300.0
-                                    action {
-                                        if (controller.isExperimentRunning) {
-                                            controller.stopExperiment()
-                                        } else {
-                                            controller.startExperiment()
+                        vBoxMain = vbox(spacing = 16.0) {
+                            alignmentProperty().set(Pos.CENTER)
+                            hbox(spacing = 32.0) {
+                                vbox(spacing = 16.0) {
+                                    alignmentProperty().set(Pos.CENTER)
+                                    textAreaCalculate = textarea {
+                                        prefHeight = 440.0
+                                    }.addClass(Styles.hard)
+                                    buttonCalculation = button("Расчет") {
+                                        prefWidth = 300.0
+                                        action {
+                                            controller.calculate()
+                                        }
+                                    }.addClass(Styles.hard)
+                                }
+                                vbox(spacing = 16.0) {
+                                    alignmentProperty().set(Pos.CENTER)
+                                    textAreaExperiment = textarea {
+                                        prefHeight = 326.0
+                                    }.addClass(Styles.hard)
+                                    hbox(spacing = 16.0) {
+                                        alignmentProperty().set(Pos.CENTER)
+                                        vbox(spacing = 4.0) {
+                                            alignmentProperty().set(Pos.CENTER)
+                                            label("Uo расч, В") {
+                                            }.addClass(Styles.hard)
+                                            textFieldU = textfield {
+                                                maxWidth = 160.0
+                                                minWidth = 160.0
+                                                alignmentProperty().set(Pos.CENTER)
+                                            }.addClass(Styles.hard)
+                                        }
+                                        vbox(spacing = 4.0) {
+                                            alignmentProperty().set(Pos.CENTER)
+                                            label("Ui изм, В") {
+                                            }.addClass(Styles.hard)
+                                            textFieldU2 = textfield {
+                                                maxWidth = 160.0
+                                                minWidth = 160.0
+                                            }.addClass(Styles.hard)
+                                        }
+                                        vbox(spacing = 4.0) {
+                                            alignmentProperty().set(Pos.CENTER)
+                                            label("Uн намаг, В") {
+                                            }.addClass(Styles.hard)
+                                            textFieldU1 = textfield {
+                                                maxWidth = 160.0
+                                                minWidth = 160.0
+                                            }.addClass(Styles.hard)
+                                        }
+                                        vbox(spacing = 4.0) {
+                                            alignmentProperty().set(Pos.CENTER)
+                                            label("Iн намаг, А") {
+                                            }.addClass(Styles.hard)
+                                            textFieldI1 = textfield {
+                                                maxWidth = 160.0
+                                                minWidth = 160.0
+                                            }.addClass(Styles.hard)
+                                        }
+                                        vbox(spacing = 4.0) {
+                                            alignmentProperty().set(Pos.CENTER)
+                                            label("Pн акт, Вт") {
+                                            }.addClass(Styles.hard)
+                                            textFieldP1 = textfield {
+                                                maxWidth = 160.0
+                                                minWidth = 160.0
+                                            }.addClass(Styles.hard)
                                         }
                                     }
-                                }.addClass(Styles.hard)
-                                hbox(spacing = 16.0) {
-                                    alignmentProperty().set(Pos.CENTER)
-                                    vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        label("Uo расч, В") {
-                                        }.addClass(Styles.hard)
-                                        textFieldU = textfield {
-                                            maxWidth = 100.0
-                                            alignmentProperty().set(Pos.CENTER)
-                                        }.addClass(Styles.hard)
-                                    }
-                                    vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        label("Ui изм, В") {
-                                        }.addClass(Styles.hard)
-                                        textFieldU2 = textfield {
-                                            maxWidth = 100.0
-                                        }.addClass(Styles.hard)
-                                    }
-                                    vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        label("Uн намаг, В") {
-                                        }.addClass(Styles.hard)
-                                        textFieldU1 = textfield {
-                                            maxWidth = 100.0
-                                        }.addClass(Styles.hard)
-                                    }
-                                    vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        label("Iн намаг, А") {
-                                        }.addClass(Styles.hard)
-                                        textFieldI1 = textfield {
-                                            maxWidth = 100.0
-                                        }.addClass(Styles.hard)
-                                    }
-                                    vbox(spacing = 4.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        label("Pн акт, Вт") {
-                                        }.addClass(Styles.hard)
-                                        textFieldP1 = textfield {
-                                            maxWidth = 100.0
-                                        }.addClass(Styles.hard)
-                                    }
+                                    buttonStartExperiment = button("Испытание") {
+                                        prefWidth = 300.0
+                                        action {
+                                            if (controller.isExperimentRunning) {
+                                                controller.stopExperiment()
+                                            } else {
+                                                controller.startExperiment()
+                                            }
+                                        }
+                                    }.addClass(Styles.hard)
                                 }
-                                textAreaExperiment = textarea {
-                                    prefHeight = 326.0
-                                }.addClass(Styles.hard)
                             }
-                        }
-                        hBoxResult = hbox(spacing = 32.0) {
-                            vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.CENTER)
-                                label("Общие данные:") {
-                                }.addClass(Styles.hard)
-                                textAreaTotalInfo = textarea {
-                                    prefHeight = 440.0
-                                }.addClass(Styles.hard)
-                            }
-                            vbox(spacing = 16.0) {
-                                alignmentProperty().set(Pos.CENTER)
-                                label("Результаты испытания:") {
-                                }.addClass(Styles.hard)
-                                textAreaResults = textarea {
-                                    prefHeight = 440.0
-                                }.addClass(Styles.hard)
+                            hBoxResult = hbox(spacing = 32.0) {
+                                vbox(spacing = 16.0) {
+                                    alignmentProperty().set(Pos.CENTER)
+                                    label("Общие данные:") {
+                                    }.addClass(Styles.hard)
+                                    textAreaTotalInfo = textarea {
+                                        prefHeight = 440.0
+                                    }.addClass(Styles.hard)
+                                }
+                                vbox(spacing = 16.0) {
+                                    alignmentProperty().set(Pos.CENTER)
+                                    label("Результаты испытания:") {
+                                    }.addClass(Styles.hard)
+                                    textAreaResults = textarea {
+                                        prefHeight = 440.0
+                                    }.addClass(Styles.hard)
+                                }
                             }
                         }
                     }
@@ -375,33 +308,18 @@ class MainView : View("Испытание активной стали стато
         }
     }
 
-
-    fun fillFields(currentItem: ExperimentObjectsType) {
-        textFieldOutside.text = currentItem.outsideD
-        textFieldInside.text = currentItem.insideD
-        textFieldIronLength.text = currentItem.ironLength
-        textFieldBackHeight.text = currentItem.backHeight
-        if (currentItem.material == "Сталь") {
-            comboBoxMaterial.selectionModel.select(1)
-        } else if (currentItem.material == "Алюминий") {
-            comboBoxMaterial.selectionModel.select(0)
-        }
-        if (currentItem.insulation == "Лак") {
-            comboBoxInsulation.selectionModel.select(0)
-        } else if (currentItem.insulation == "Оксидирование") {
-            comboBoxInsulation.selectionModel.select(1)
-        }
-    }
-
     private fun clearFields() {
         comboboxTypeObject.selectionModel.select(0)
         textFieldFacNumber.text = ""
-        textFieldOutside.text = ""
-        textFieldInside.text = ""
-        textFieldIronLength.text = ""
-        textFieldBackHeight.text = ""
-        comboBoxMaterial.selectionModel.select(0)
-        comboBoxInsulation.selectionModel.select(0)
+        textAreaTotalInfo.text = ""
+        textAreaExperiment.text = ""
+        textAreaCalculate.text = ""
+        textAreaResults.text = ""
+        textFieldU.text = ""
+        textFieldI1.text = ""
+        textFieldP1.text = ""
+        textFieldU1.text = ""
+        textFieldU2.text = ""
     }
 
     fun handleAddTestItem() {

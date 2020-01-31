@@ -1,10 +1,8 @@
 package ru.avem.kspemstator.controllers
 
 import javafx.application.Platform
-import javafx.scene.control.Alert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import ru.avem.kspemstator.communication.CommunicationModel
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO2
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO3
@@ -13,11 +11,15 @@ import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Compa
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DOWN
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.POWER
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.UP
-import ru.avem.kspemstator.database.entities.*
+import ru.avem.kspemstator.database.entities.ExperimentObjectsType
+import ru.avem.kspemstator.database.entities.MarksObjects
+import ru.avem.kspemstator.database.entities.MarksTypes
+import ru.avem.kspemstator.database.entities.ObjectsTypes
 import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.MainView
 import tornadofx.Controller
 import tornadofx.observable
+import tornadofx.selectedItem
 import java.text.SimpleDateFormat
 
 class MainViewController : Controller() {
@@ -60,6 +62,8 @@ class MainViewController : Controller() {
     @Volatile
     var isValuesNeed = false
     @Volatile
+    var isNeedCheckEarth = false
+    @Volatile
     private var cause: String? = null
 
     private val sdf = SimpleDateFormat("HH:mm:ss-SSS")
@@ -89,6 +93,15 @@ class MainViewController : Controller() {
 //                    CommunicationModel.di5 -> {
 //                        setCause("di5")
 //                    }
+                    CommunicationModel.di6 -> {
+                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+                    }
+                    CommunicationModel.di7 -> {
+                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+                    }
+                    !CommunicationModel.di8 -> {
+                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+                    }
                     CommunicationModel.i1 > 10 -> {
                         setCause("Ток превысил 10")
                     }
@@ -97,44 +110,9 @@ class MainViewController : Controller() {
         }.start()
     }
 
-    fun isValuesEmpty(): Boolean {
-        return view.comboboxTypeObject.selectionModel.isEmpty ||
-                view.textFieldFacNumber.text.isNullOrEmpty() ||
-                view.textFieldOutside.text.isNullOrEmpty() ||
-                view.textFieldInside.text.isNullOrEmpty() ||
-                view.textFieldBackHeight.text.isNullOrEmpty() ||
-                view.textFieldIronLength.text.isNullOrEmpty() ||
-                view.comboBoxMaterial.selectionModel.selectedItem.isNullOrEmpty() ||
-                view.comboBoxInsulation.selectionModel.selectedItem.isNullOrEmpty()
-    }
-
-    fun isValuesDouble(): Boolean {
-        return try {
-            view.textFieldOutside.text.toDouble()
-            view.textFieldInside.text.toDouble()
-            view.textFieldBackHeight.text.toDouble()
-            view.textFieldIronLength.text.toDouble()
-            true
-        } catch (e: Exception) {
-            Toast.makeText("Неверно заполнены поля").show(Toast.ToastType.ERROR)
-            false
-        }
-    }
 
     fun showAboutUs() {
-        val alert = Alert(Alert.AlertType.INFORMATION)
-        alert.title = "Версия ПО"
-        alert.headerText = "Версия: 0.0.1b"
-        alert.contentText = "Дата: 05.12.2019"
-        alert.showAndWait()
-    }
-
-    fun refreshUsers() {
-        view.comboboxUserSelector.items = transaction {
-            User.find {
-                Users.login notLike "admin"
-            }.toList().observable()
-        }
+        Toast.makeText("Версия ПО: 0.0.1b, Дата: 05.12.2019").show(Toast.ToastType.INFORMATION)
     }
 
     fun refreshObjectsTypes() {
@@ -143,31 +121,6 @@ class MainViewController : Controller() {
             ExperimentObjectsType.all().toList().observable()
         }
         view.comboboxTypeObject.selectionModel.select(selectedIndex)
-    }
-
-    fun refreshMarks() {
-        view.comboboxMark.items = transaction {
-            MarksObjects.all().toList().observable()
-        }
-    }
-
-    fun save() {
-        if (isValuesDouble()) {
-            transaction {
-                ObjectsTypes.update({
-                    ObjectsTypes.objectType eq view.comboboxTypeObject.selectionModel.selectedItem.objectType
-                }) {
-                    it[objectType] = view.comboboxTypeObject.selectionModel.selectedItem.objectType
-                    it[insideD] = view.textFieldInside.text
-                    it[outsideD] = view.textFieldOutside.text
-                    it[ironLength] = view.textFieldIronLength.text
-                    it[backHeight] = view.textFieldBackHeight.text
-                    it[material] = view.comboBoxMaterial.selectionModel.selectedItem
-                    it[insulation] = view.comboBoxInsulation.selectionModel.selectedItem
-                }
-            }
-            refreshObjectsTypes()
-        }
     }
 
     fun deleteTestItem() {
@@ -200,38 +153,55 @@ class MainViewController : Controller() {
     }
 
     fun calculate() {
-        if (!isValuesEmpty()) {
-            val p = view.comboboxMark.value.density.toDouble()
-
-            val ki: Double = if (view.comboBoxInsulation.selectionModel.selectedItem == "Лак") {
-                0.93
-            } else {
-                0.95
+        when {
+            view.comboboxTypeObject.selectionModel.selectedItem == null -> {
+                Toast.makeText("Выберите тип двигателя").show(Toast.ToastType.WARNING)
             }
-            insideD = view.textFieldInside.text.toDouble() //TODO может понадобится
-            outsideD = view.textFieldOutside.text.toDouble()
-            l = view.textFieldIronLength.text.toDouble()
-            h = view.textFieldBackHeight.text.toDouble()
-            lakt = ki * l * 0.001
-            lsr = Math.PI * (outsideD - h) * 0.001
-            sh = lakt * h * 0.001
-            v = lsr * sh
-            m = v * p
-            u = 4.44 * 22 * 50 * sh
-            Platform.runLater {
-                view.textAreaCalculate.text = "1.Длина активной стали Lакт = " + String.format("%.4f м.", lakt) +
-                        "\n2.Длина средней линии железа Lср = " + String.format("%.4f м.", lsr) +
-                        "\n3.Сечение спинки Sh = " + String.format("%.4f м².", sh) +
-                        "\n4.Объем железа V = " + String.format("%.4f м³.", v) +
-                        "\n5.Масса железа M = " + String.format("%.4f кг.", m) +
-                        "\n6.Расчетное напряжение Uo = " + String.format("%.4f В.", u)
-
-                view.textFieldU.text = String.format("%.2f", u)
-
-                Toast.makeText("Выполнен расчет").show(Toast.ToastType.INFORMATION)
+            view.textFieldFacNumber.text.isNullOrEmpty() -> {
+                Toast.makeText("Введите заводской номер двигателя").show(Toast.ToastType.WARNING)
             }
-        } else {
-            Toast.makeText("Не все поля заполнены").show(Toast.ToastType.WARNING)
+            else -> {
+                var p = 0.0
+                transaction {
+                    var ourObjectType = MarksObjects.find() {
+                        MarksTypes.mark eq view.comboboxTypeObject.value.mark
+                    }.toList()
+                    p = ourObjectType[0].density.toDouble()
+                }
+                val ki: Double = if (view.comboboxTypeObject.value.insulation == "Лак") {
+                    0.93
+                } else {
+                    0.95
+                }
+                insideD = view.comboboxTypeObject.value.insideD.toDouble() //TODO может понадобится
+                outsideD = view.comboboxTypeObject.value.outsideD.toDouble()
+                l = view.comboboxTypeObject.value.ironLength.toDouble()
+                h = view.comboboxTypeObject.value.backHeight.toDouble()
+                lakt = ki * l * 0.001
+                lsr = Math.PI * (outsideD - h) * 0.001
+                sh = lakt * h * 0.001
+                v = lsr * sh
+                m = v * p
+                u = 4.44 * 22 * 50 * sh
+                Platform.runLater {
+                    view.textAreaCalculate.text = "1.Длина активной стали Lакт = " + String.format("%.4f м.", lakt) +
+                            "\n2.Длина средней линии железа Lср = " + String.format("%.4f м.", lsr) +
+                            "\n3.Сечение спинки Sh = " + String.format("%.4f м².", sh) +
+                            "\n4.Объем железа V = " + String.format("%.4f м³.", v) +
+                            "\n5.Масса железа M = " + String.format("%.4f кг.", m) +
+                            "\n6.Расчетное напряжение Uo = " + String.format("%.4f В.", u)
+
+                    view.textAreaTotalInfo.text = "Испытатель №1: Иванов И.И." +
+                            "\nИспытатель №2: Петров П.П." +
+                            "\nТип двигателя: ${view.comboboxTypeObject.selectedItem.toString()}" +
+                            "\n№ двигателя: ${view.textFieldFacNumber.text}"
+
+                    view.textFieldU.text = String.format("%.2f", u)
+
+                    Toast.makeText("Выполнен расчет").show(Toast.ToastType.INFORMATION)
+                    view.buttonStartExperiment.isDisable = false
+                }
+            }
         }
     }
 
@@ -242,14 +212,14 @@ class MainViewController : Controller() {
         val hf = (measuringIA * 21) / lsr
 
 //        if (cause == "") {
-            view.textAreaResults.text = "1.Фактическая индукция:" +
-                    "\nBf = " + String.format("%.4f bf = measuringIB / (4.44 * 22 * 50 * sh) ", bf) +
-                    "\n2.Фактическая активная мощность" +
-                    "\nPf = " + String.format("%.4f measuringPA * (21 / 22) * (1.0 / (bf * bf))", pf) +
-                    "\n3.Удельные потери" +
-                    "\nPt = " + String.format("%.4f  pf / m", pt) +
-                    "\n4.Напряженность" +
-                    "\nHf = " + String.format("%.4f  v = lsr * sh", hf)
+        view.textAreaResults.text = "1.Фактическая индукция:" +
+                "\nBf = " + String.format("%.4f bf = measuringIB / (4.44 * 22 * 50 * sh) ", bf) +
+                "\n2.Фактическая активная мощность" +
+                "\nPf = " + String.format("%.4f measuringPA * (21 / 22) * (1.0 / (bf * bf))", pf) +
+                "\n3.Удельные потери" +
+                "\nPt = " + String.format("%.4f  pf / m", pt) +
+                "\n4.Напряженность" +
+                "\nHf = " + String.format("%.4f  v = lsr * sh", hf)
 //        }
     }
 
@@ -261,7 +231,7 @@ class MainViewController : Controller() {
 
     fun startExperiment() {
         Platform.runLater {
-            view.vBoxEdit.isDisable = true
+            view.hboxEdit.isDisable = true
             view.buttonCalculation.isDisable = true
             view.buttonStartExperiment.text = "Отменить"
             view.textAreaExperiment.text = ""
@@ -277,9 +247,7 @@ class MainViewController : Controller() {
             }
 
             if (isExperimentRunning) {
-                appendOneMessageToLog("Проверьте подключение приборов к СУ")
-                appendOneMessageToLog("Инициализация устройств")
-                appendOneMessageToLog("Ожидайте...")
+                appendOneMessageToLog("Запуск испытания")
             }
 
             while (isExperimentRunning && !CommunicationModel.owenPR200Controller.isResponding) {
@@ -294,23 +262,11 @@ class MainViewController : Controller() {
                 checkProtections()
             }
 
-            Thread {
-                isValuesNeed = true
-                if (isExperimentRunning && isDevicesResponding) {
-                    while (isValuesNeed && isExperimentRunning && isDevicesResponding) {
-                        Platform.runLater {
-                            view.textFieldU2.text = String.format("%.2f", CommunicationModel.u2)
-                            view.textFieldU1.text = String.format("%.2f", CommunicationModel.u1)
-                            view.textFieldI1.text = String.format("%.2f", CommunicationModel.i1)
-                            view.textFieldP1.text = String.format("%.2f", CommunicationModel.p1)
-                        }
-                        Thread.sleep(10)
-                    }
-                }
-            }.start()
+            if (isExperimentRunning && isDevicesResponding) {
+                viewMeasuringValues()
+            }
 
             if (isExperimentRunning && !CommunicationModel.di1 && isDevicesResponding) {
-                appendOneMessageToLog("Возврат в положение MIN")
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
             }
 
@@ -320,11 +276,9 @@ class MainViewController : Controller() {
 
             if (isExperimentRunning && isDevicesResponding) {
                 CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
-                appendOneMessageToLog("Латр в нижнем положении")
             }
 
             if (isExperimentRunning && isDevicesResponding) {
-                appendOneMessageToLog("Собираем схему")
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(POWER)
                 when {
                     u <= 5 -> {
@@ -347,8 +301,11 @@ class MainViewController : Controller() {
 
             if (isExperimentRunning && isDevicesResponding) {
                 Thread.sleep(200)
-                appendOneMessageToLog("Поднимаем нужное напряжение...")
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(UP)
+            }
+
+            if (isExperimentRunning) {
+                controlVoltage()
             }
 
             while (isExperimentRunning && CommunicationModel.u2 < u && isDevicesResponding) {
@@ -362,7 +319,7 @@ class MainViewController : Controller() {
             CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
 
             if (isExperimentRunning && isDevicesResponding) {
-                appendOneMessageToLog("Началось измерение. Ожидайте...")
+                appendOneMessageToLog("Началось измерение")
                 Thread.sleep(1000)
                 measuringUA = CommunicationModel.u1
                 measuringUB = CommunicationModel.u2
@@ -379,13 +336,11 @@ class MainViewController : Controller() {
             isValuesNeed = false
 
 
-            appendOneMessageToLog("Возврат в положение MIN")
             CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
             while (!CommunicationModel.di1 && isDevicesResponding) {
                 Thread.sleep(1)
             }
             if (isExperimentRunning && isDevicesResponding) {
-                appendOneMessageToLog("Латр в нижнем положении")
             }
 
             CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
@@ -394,9 +349,9 @@ class MainViewController : Controller() {
             isExperimentRunning = false
 
             if (cause != "") {
-                appendOneMessageToLog(String.format("Испытание прервано по причине: %s", cause))
+                appendOneMessageToLog(String.format("Испытание прервано по причине: \n%s", cause))
             } else if (!isDevicesResponding) {
-                appendOneMessageToLog("Испытание прервано: Потеряна связь с приборами")
+                appendOneMessageToLog("Потеряна связь с приборами")
                 setCause("Потеряна связь с приборами")
             } else {
                 appendOneMessageToLog("Испытание завершено успешно")
@@ -405,10 +360,48 @@ class MainViewController : Controller() {
             showResults()
 
             Platform.runLater {
-                view.vBoxEdit.isDisable = false
+                view.hboxEdit.isDisable = false
                 view.buttonCalculation.isDisable = false
                 view.buttonStartExperiment.isDisable = false
                 view.buttonStartExperiment.text = "Испытание"
+            }
+        }.start()
+    }
+
+    private fun controlVoltage() {
+        Thread {
+            var lastU = CommunicationModel.u2
+            Thread.sleep(5000)
+            if (lastU * 1.1 > CommunicationModel.u2) {
+                setCause("Нет напряжения\nПроверьте соединение кабеля")
+            }
+        }.start()
+    }
+
+    private fun viewMeasuringValues() {
+        Thread {
+            isValuesNeed = true
+            if (isExperimentRunning && isDevicesResponding) {
+                while (isValuesNeed && isExperimentRunning && isDevicesResponding) {
+                    Platform.runLater {
+                        var measuringU2 = CommunicationModel.u2
+                        var measuringU1 = CommunicationModel.u1
+                        var measuringI1 = CommunicationModel.i1
+                        var measuringP1 = CommunicationModel.p1
+
+                        if (isValuesNeed && isExperimentRunning && isDevicesResponding) {
+                            measuringU2 = CommunicationModel.u2
+                            measuringU1 = CommunicationModel.u1
+                            measuringI1 = CommunicationModel.i1
+                            measuringP1 = CommunicationModel.p1
+                        }
+                        view.textFieldU2.text = String.format("%.2f", measuringU2)
+                        view.textFieldU1.text = String.format("%.2f", measuringU1)
+                        view.textFieldI1.text = String.format("%.2f", measuringI1)
+                        view.textFieldP1.text = String.format("%.2f", measuringP1)
+                    }
+                    Thread.sleep(100)
+                }
             }
         }.start()
     }

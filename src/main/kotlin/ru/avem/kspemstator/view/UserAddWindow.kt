@@ -84,7 +84,6 @@ class UserAddWindow : View("Добавить пользователя") {
                                 this.fullName = fullName
                             }
                         }
-                        mainViewController.refreshUsers()
                         parentView.refreshUsersTable()
                         textFieldFullName.clear()
                         textFieldLogin.clear()

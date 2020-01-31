@@ -81,7 +81,6 @@ class AddMarkController : Controller() {
                 }
             }
             clearViews()
-            view.refreshMarks()
             true
         } else {
             false
@@ -96,7 +95,6 @@ class AddMarkController : Controller() {
                 MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
             }
         }
-        view.refreshMarks()
     }
 
     fun refreshMarksTypes() {

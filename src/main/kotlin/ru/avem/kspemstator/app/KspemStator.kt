@@ -12,6 +12,7 @@ import ru.avem.kspemstator.view.Styles
 import tornadofx.App
 import tornadofx.FX
 
+
 class KspemStator : App(MainView::class, Styles::class) {
 
     override fun init() {
@@ -24,7 +25,7 @@ class KspemStator : App(MainView::class, Styles::class) {
         stage.fullScreenExitKeyCombination = KeyCombination.NO_MATCH
         stage.initStyle(StageStyle.TRANSPARENT)
         super.start(stage)
-        FX.primaryStage.icons += Image("logo.png")
+        FX.primaryStage.icons += Image("icon.png")
         initializeSingletons()
     }
 

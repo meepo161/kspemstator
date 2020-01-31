@@ -77,7 +77,7 @@ class Styles : Stylesheet() {
         tableColumn {
             alignment = Pos.CENTER
             fontWeight = FontWeight.EXTRA_BOLD
-            fontSize = 15.px
+            fontSize = 22.px
         }
 
         tableRowCell {

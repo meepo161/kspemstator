@@ -46,7 +46,7 @@ class UserEditorWindow : View("Редактор пользователей") {
             alignmentProperty().set(Pos.CENTER)
 
             tableViewUsers = tableview {
-                prefWidth = 1000.0
+                prefWidth = 800.0
 
                 columnResizePolicyProperty().set(TableView.CONSTRAINED_RESIZE_POLICY)
 
@@ -79,7 +79,7 @@ class UserEditorWindow : View("Редактор пользователей") {
 
             vbox(spacing = 16.0) {
                 button("Добавить пользователя") {
-                    prefWidth = 200.0
+                    prefWidth = 300.0
 
                     action {
                         find<UserAddWindow>().openModal(
@@ -90,7 +90,7 @@ class UserEditorWindow : View("Редактор пользователей") {
                 }
 
                 button("Удалить пользователя") {
-                    prefWidth = 200.0
+                    prefWidth = 300.0
 
                     action {
                         val item = tableViewUsers.selectedItem
@@ -118,7 +118,7 @@ class UserEditorWindow : View("Редактор пользователей") {
                         }
                     }
                 }
-            }.addClass(Styles.medium, Styles.baseColorFoo)
+            }
         }
-    }
+    }.addClass(Styles.medium, Styles.baseColorFoo)
 }

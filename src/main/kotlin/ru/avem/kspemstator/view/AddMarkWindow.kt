@@ -15,10 +15,12 @@ import java.awt.Desktop
 import java.nio.file.Paths
 
 class AddMarkWindow : View("Добавить материал") {
+
     var textFieldMark: TextField by singleAssign()
     var textFieldDensity: TextField by singleAssign()
     var textfieldLosses: TextField by singleAssign()
     var textfieldIntensity: TextField by singleAssign()
+
     var tableViewObjects: TableView<MarksObjects> by singleAssign()
 
     private val controller: AddMarkController by inject()
@@ -33,6 +35,13 @@ class AddMarkWindow : View("Добавить материал") {
     override val root = anchorpane {
 
         hbox(spacing = 16.0) {
+            anchorpaneConstraints {
+                leftAnchor = 16.0
+                rightAnchor = 16.0
+                topAnchor = 16.0
+                bottomAnchor = 16.0
+            }
+            alignment = Pos.CENTER
             tableViewObjects = tableview {
                 columnResizePolicyProperty().set(TableView.CONSTRAINED_RESIZE_POLICY)
                 prefWidth = 900.0
