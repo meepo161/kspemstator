@@ -19,7 +19,6 @@ import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.MainView
 import tornadofx.Controller
 import tornadofx.observable
-import tornadofx.selectedItem
 import java.text.SimpleDateFormat
 
 class MainViewController : Controller() {
@@ -29,6 +28,8 @@ class MainViewController : Controller() {
     private var insideD: Double = 0.0
     private var outsideD: Double = 0.0
     private var l: Double = 0.0
+    private var losses: Double = 0.0
+    private var intensity: Double = 0.0
     private var h: Double = 0.0
     private var lakt: Double = 0.0
     private var lsr: Double = 0.0
@@ -37,32 +38,22 @@ class MainViewController : Controller() {
     private var m: Double = 0.0
     private var u: Double = 0.0
     private var ws: Int = 0
+    private var bf: Double = 0.0
+    private var pf: Double = 0.0
+    private var pt: Double = 0.0
+    private var hf: Double = 0.0
 
     @Volatile
     var measuringUA: Double = 0.0
     @Volatile
     var measuringUB: Double = 0.0
     @Volatile
-    var measuringUC: Double = 0.0
-    @Volatile
     var measuringIA: Double = 0.0
     @Volatile
-    var measuringIB: Double = 0.0
-    @Volatile
-    var measuringIC: Double = 0.0
-    @Volatile
     var measuringPA: Double = 0.0
-    @Volatile
-    var measuringPB: Double = 0.0
-    @Volatile
-    var measuringPC: Double = 0.0
 
     @Volatile
     var isExperimentRunning = false
-    @Volatile
-    var isValuesNeed = false
-    @Volatile
-    var isNeedCheckEarth = false
     @Volatile
     private var cause: String? = null
 
@@ -94,22 +85,21 @@ class MainViewController : Controller() {
 //                        setCause("di5")
 //                    }
                     CommunicationModel.di6 -> {
-                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
                     }
                     CommunicationModel.di7 -> {
-                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
                     }
                     !CommunicationModel.di8 -> {
-                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
                     }
-                    CommunicationModel.i1 > 10 -> {
-                        setCause("Ток превысил 10")
+                    CommunicationModel.i1 > 15 -> {
+                        setCause("Ток превысил 15")
                     }
                 }
             }
         }.start()
     }
-
 
     fun showAboutUs() {
         Toast.makeText("Версия ПО: 0.0.1b, Дата: 05.12.2019").show(Toast.ToastType.INFORMATION)
@@ -163,10 +153,12 @@ class MainViewController : Controller() {
             else -> {
                 var p = 0.0
                 transaction {
-                    var ourObjectType = MarksObjects.find() {
+                    val ourObjectType = MarksObjects.find() {
                         MarksTypes.mark eq view.comboboxTypeObject.value.mark
                     }.toList()
                     p = ourObjectType[0].density.toDouble()
+                    losses = ourObjectType[0].losses.toDouble()
+                    intensity = ourObjectType[0].intensity.toDouble()
                 }
                 val ki: Double = if (view.comboboxTypeObject.value.insulation == "Лак") {
                     0.93
@@ -183,44 +175,8 @@ class MainViewController : Controller() {
                 v = lsr * sh
                 m = v * p
                 u = 4.44 * 22 * 50 * sh
-                Platform.runLater {
-                    view.textAreaCalculate.text = "1.Длина активной стали Lакт = " + String.format("%.4f м.", lakt) +
-                            "\n2.Длина средней линии железа Lср = " + String.format("%.4f м.", lsr) +
-                            "\n3.Сечение спинки Sh = " + String.format("%.4f м².", sh) +
-                            "\n4.Объем железа V = " + String.format("%.4f м³.", v) +
-                            "\n5.Масса железа M = " + String.format("%.4f кг.", m) +
-                            "\n6.Расчетное напряжение Uo = " + String.format("%.4f В.", u)
-
-                    view.textAreaTotalInfo.text = "Испытатель №1: Иванов И.И." +
-                            "\nИспытатель №2: Петров П.П." +
-                            "\nТип двигателя: ${view.comboboxTypeObject.selectedItem.toString()}" +
-                            "\n№ двигателя: ${view.textFieldFacNumber.text}"
-
-                    view.textFieldU.text = String.format("%.2f", u)
-
-                    Toast.makeText("Выполнен расчет").show(Toast.ToastType.INFORMATION)
-                    view.buttonStartExperiment.isDisable = false
-                }
             }
         }
-    }
-
-    private fun showResults() {
-        val bf = measuringIB / (4.44 * 22 * 50 * sh)
-        val pf = measuringPA * (21 / 22) * (1.0 / (bf * bf))
-        val pt = pf / m
-        val hf = (measuringIA * 21) / lsr
-
-//        if (cause == "") {
-        view.textAreaResults.text = "1.Фактическая индукция:" +
-                "\nBf = " + String.format("%.4f bf = measuringIB / (4.44 * 22 * 50 * sh) ", bf) +
-                "\n2.Фактическая активная мощность" +
-                "\nPf = " + String.format("%.4f measuringPA * (21 / 22) * (1.0 / (bf * bf))", pf) +
-                "\n3.Удельные потери" +
-                "\nPt = " + String.format("%.4f  pf / m", pt) +
-                "\n4.Напряженность" +
-                "\nHf = " + String.format("%.4f  v = lsr * sh", hf)
-//        }
     }
 
     fun stopExperiment() {
@@ -230,9 +186,10 @@ class MainViewController : Controller() {
     }
 
     fun startExperiment() {
+        calculate()
+
         Platform.runLater {
             view.hboxEdit.isDisable = true
-            view.buttonCalculation.isDisable = true
             view.buttonStartExperiment.text = "Отменить"
             view.textAreaExperiment.text = ""
         }
@@ -244,6 +201,8 @@ class MainViewController : Controller() {
             if (u > 150) {
                 cause = "Напряжение больше допустимого"
                 isExperimentRunning = false
+            } else {
+                appendOneMessageToLog("Напряжение расчитанное = " + String.format("%.2f", u))
             }
 
             if (isExperimentRunning) {
@@ -260,10 +219,6 @@ class MainViewController : Controller() {
 
             if (isExperimentRunning && isDevicesResponding) {
                 checkProtections()
-            }
-
-            if (isExperimentRunning && isDevicesResponding) {
-                viewMeasuringValues()
             }
 
             if (isExperimentRunning && !CommunicationModel.di1 && isDevicesResponding) {
@@ -286,7 +241,7 @@ class MainViewController : Controller() {
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO3)
                         ws = 10
                     }
-                    u <= 50 -> {
+                    u <= 40 -> {
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO3)
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO5)
                         ws = 21
@@ -308,39 +263,16 @@ class MainViewController : Controller() {
                 controlVoltage()
             }
 
-            while (isExperimentRunning && CommunicationModel.u2 < u && isDevicesResponding) {
-                Thread.sleep(1)
-                if (isExperimentRunning && CommunicationModel.di2 && isDevicesResponding) {
-                    setCause("Достигли концевика MAX")
-                    break
-                }
+            if (isExperimentRunning && isDevicesResponding) {
+                regulationVoltage(u)
+                showResults()
             }
 
             CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
 
-            if (isExperimentRunning && isDevicesResponding) {
-                appendOneMessageToLog("Началось измерение")
-                Thread.sleep(1000)
-                measuringUA = CommunicationModel.u1
-                measuringUB = CommunicationModel.u2
-                measuringUC = CommunicationModel.u3
-                measuringIA = CommunicationModel.i1
-                measuringIB = CommunicationModel.i2
-                measuringIC = CommunicationModel.i3
-                measuringPA = CommunicationModel.p1
-                appendOneMessageToLog("Напряжение = " + String.format("%.2f", measuringUB))
-                appendOneMessageToLog("Ток It = " + String.format("%.2f", measuringIA))
-                appendOneMessageToLog("Напряжение Ut = " + String.format("%.2f", measuringUA))
-                appendOneMessageToLog("Активная мощность Pt = " + String.format("%.2f", measuringPA))
-            }
-            isValuesNeed = false
-
-
             CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
             while (!CommunicationModel.di1 && isDevicesResponding) {
                 Thread.sleep(1)
-            }
-            if (isExperimentRunning && isDevicesResponding) {
             }
 
             CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
@@ -349,19 +281,15 @@ class MainViewController : Controller() {
             isExperimentRunning = false
 
             if (cause != "") {
-                appendOneMessageToLog(String.format("Испытание прервано по причине: \n%s", cause))
+                appendOneMessageToLog(String.format("Прервано по причине: %s", cause))
             } else if (!isDevicesResponding) {
                 appendOneMessageToLog("Потеряна связь с приборами")
-                setCause("Потеряна связь с приборами")
             } else {
                 appendOneMessageToLog("Испытание завершено успешно")
             }
 
-            showResults()
-
             Platform.runLater {
                 view.hboxEdit.isDisable = false
-                view.buttonCalculation.isDisable = false
                 view.buttonStartExperiment.isDisable = false
                 view.buttonStartExperiment.text = "Испытание"
             }
@@ -370,7 +298,7 @@ class MainViewController : Controller() {
 
     private fun controlVoltage() {
         Thread {
-            var lastU = CommunicationModel.u2
+            val lastU = CommunicationModel.u2
             Thread.sleep(5000)
             if (lastU * 1.1 > CommunicationModel.u2) {
                 setCause("Нет напряжения\nПроверьте соединение кабеля")
@@ -378,31 +306,58 @@ class MainViewController : Controller() {
         }.start()
     }
 
-    private fun viewMeasuringValues() {
-        Thread {
-            isValuesNeed = true
-            if (isExperimentRunning && isDevicesResponding) {
-                while (isValuesNeed && isExperimentRunning && isDevicesResponding) {
-                    Platform.runLater {
-                        var measuringU2 = CommunicationModel.u2
-                        var measuringU1 = CommunicationModel.u1
-                        var measuringI1 = CommunicationModel.i1
-                        var measuringP1 = CommunicationModel.p1
-
-                        if (isValuesNeed && isExperimentRunning && isDevicesResponding) {
-                            measuringU2 = CommunicationModel.u2
-                            measuringU1 = CommunicationModel.u1
-                            measuringI1 = CommunicationModel.i1
-                            measuringP1 = CommunicationModel.p1
-                        }
-                        view.textFieldU2.text = String.format("%.2f", measuringU2)
-                        view.textFieldU1.text = String.format("%.2f", measuringU1)
-                        view.textFieldI1.text = String.format("%.2f", measuringI1)
-                        view.textFieldP1.text = String.format("%.2f", measuringP1)
-                    }
-                    Thread.sleep(100)
-                }
+    private fun regulationVoltage(voltage: Double) {
+        while (isExperimentRunning && isDevicesResponding && (CommunicationModel.u2 <= voltage * 0.99 || CommunicationModel.u2 > voltage * 1.01)) {
+            if (CommunicationModel.u2 <= voltage * 0.99) {
+                CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
+                CommunicationModel.owenPR200Controller.onRegisterInKMS(UP)
+            } else if (CommunicationModel.u2 > voltage * 1.01) {
+                CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
+                CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
             }
-        }.start()
+            if (isExperimentRunning && CommunicationModel.di2 && isDevicesResponding) {
+                setCause("Достигли концевика MAX")
+                break
+            }
+        }
+
+        measuringUA = CommunicationModel.u1
+        measuringUB = CommunicationModel.u2
+        measuringIA = CommunicationModel.i1
+        measuringPA = CommunicationModel.p1
+        appendOneMessageToLog(String.format("Напряжение = %.2f В", measuringUB))
+        appendOneMessageToLog(String.format("Ток It =  %.2f А", measuringIA))
+        appendOneMessageToLog(String.format("Напряжение Ut = %.2f В", measuringUA))
+        appendOneMessageToLog(String.format("Активная мощность Pt = %.2f Вт", measuringPA))
+
+        CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
+        CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
     }
+
+    private fun showResults() {
+        bf = measuringUB / (4.44 * 22 * 50 * sh)
+        pf = measuringPA * (21.0 / 22.0) * (1.0 / (bf * bf))
+        pt = pf / m
+        hf = (measuringIA * 21) / lsr
+
+        Platform.runLater {
+            appendOneMessageToLog(String.format("Фактическая индукция Bf = %.4f Тл", bf))
+            appendOneMessageToLog(String.format("Фактическая активная мощность Pf = %.4f Вт", pf))
+            appendOneMessageToLog(String.format("Удельные потери Pt = %.4f Вт/кг", pt))
+            appendOneMessageToLog(String.format("Напряженность Hf =  %.4f А/м", hf))
+            appendOneMessageToLog("Заключение:")
+            if (losses >= pt) {
+                appendOneMessageToLog(String.format("Запас по удельным потерям в %.2f раз(а)", losses/pt))
+            } else {
+                appendOneMessageToLog(String.format("Превышение по удельным потерям в %.2f раз(а)", losses/pt))
+            }
+
+            if (intensity > hf) {
+                appendOneMessageToLog(String.format("Запас по магнитным свойствам в %.2f раз(а)", intensity/hf))
+            } else {
+                appendOneMessageToLog(String.format("Превышение по магнитным свойствам в %.2f раз(а)", intensity/hf))
+            }
+        }
+    }
+
 }

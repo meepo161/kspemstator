@@ -4,8 +4,11 @@ import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.avem.kspemstator.database.entities.ExperimentObjectsType
 import ru.avem.kspemstator.database.entities.MarksObjects
 import ru.avem.kspemstator.database.entities.MarksTypes
+import ru.avem.kspemstator.database.entities.ObjectsTypes
+import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.AddMarkWindow
 import tornadofx.Controller
 import tornadofx.controlsfx.warningNotification
@@ -89,10 +92,20 @@ class AddMarkController : Controller() {
 
 
     fun deleteObject() {
-        val item = window.tableViewObjects.selectedItem
-        if (item != null) {
-            transaction {
-                MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
+        transaction {
+            val markDouble = ExperimentObjectsType.find() {
+                ObjectsTypes.mark eq window.tableViewObjects.selectedItem.toString()
+            }
+
+            if (markDouble.empty()) {
+                val item = window.tableViewObjects.selectedItem
+                if (item != null) {
+                    transaction {
+                        MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
+                    }
+                }
+            } else {
+                Toast.makeText("Эта марка стали используется").show(Toast.ToastType.ERROR)
             }
         }
     }

@@ -10,6 +10,8 @@ class Styles : Stylesheet() {
         val medium by cssclass()
         val hard by cssclass()
         val extraHard by cssclass()
+        val megaHard by cssclass()
+        val stopStart by cssclass()
         val anchorPaneBorders by cssclass()
         val anchorPaneStatusColor by cssclass()
         val roundButton by cssclass()
@@ -37,6 +39,16 @@ class Styles : Stylesheet() {
 
         extraHard {
             fontSize = 32.px
+            fontWeight = FontWeight.EXTRA_BOLD
+        }
+
+        megaHard {
+            fontSize = 48.px
+            fontWeight = FontWeight.EXTRA_BOLD
+        }
+
+        stopStart {
+            fontSize = 80.px
             fontWeight = FontWeight.EXTRA_BOLD
         }
 

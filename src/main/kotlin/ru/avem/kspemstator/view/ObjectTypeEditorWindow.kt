@@ -87,7 +87,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                     }
                 }.addClass(Styles.medium)
 
-                column("Наружный диаметр", ExperimentObjectsType::outsideD) {
+                column("Наружный диаметр, мм", ExperimentObjectsType::outsideD) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
                             ObjectsTypes.update({
@@ -194,7 +194,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                 vbox(spacing = 4.0) {
                     alignmentProperty().set(Pos.CENTER)
 
-                    label("Наружный диаметр:")
+                    label("Наружный диаметр, мм:")
                     textfieldOutside = textfield {
                         prefWidth = 240.0
                         maxWidth = 240.0
@@ -205,7 +205,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                 vbox(spacing = 4.0) {
                     alignmentProperty().set(Pos.CENTER)
 
-                    label("Внутренний диаметр:")
+                    label("Внутренний диаметр, мм:")
                     textfieldInside = textfield {
                         prefWidth = 240.0
                         maxWidth = 240.0
@@ -216,7 +216,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                 vbox(spacing = 4.0) {
                     alignmentProperty().set(Pos.CENTER)
 
-                    label("Длина железа:")
+                    label("Длина железа, мм:")
                     textfieldIronLength = textfield {
                         prefWidth = 240.0
                         maxWidth = 240.0
@@ -226,7 +226,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                 vbox(spacing = 4.0) {
                     alignmentProperty().set(Pos.CENTER)
 
-                    label("Высота спинки:")
+                    label("Высота спинки, мм:")
                     textfieldBackHeight = textfield {
                         prefWidth = 240.0
                         maxWidth = 240.0

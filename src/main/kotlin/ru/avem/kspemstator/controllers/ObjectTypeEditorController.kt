@@ -47,7 +47,7 @@ class ObjectTypeEditorController : Controller() {
                 window.textfieldIronLength.text.isNullOrEmpty() ||
                 window.comboBoxMaterial.selectionModel.selectedItem.isNullOrEmpty() ||
                 window.comboBoxInsulation.selectionModel.selectedItem.isNullOrEmpty() ||
-                window.comboBoxMark.selectionModel == null
+                window.comboBoxMark.selectionModel.selectedItem == null
     }
 
     fun isValuesDouble(): Boolean {

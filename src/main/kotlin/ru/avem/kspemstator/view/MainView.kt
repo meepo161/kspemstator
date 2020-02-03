@@ -10,7 +10,6 @@ import javafx.stage.Modality
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.ExperimentObjectsType
-import ru.avem.kspemstator.database.entities.MarksObjects
 import ru.avem.kspemstator.database.entities.User
 import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.Styles.Companion.medium
@@ -34,26 +33,15 @@ class MainView : View("Испытание активной стали стато
     private var hBoxResult: HBox by singleAssign()
     var hboxEdit: HBox by singleAssign()
 
-    var textAreaCalculate: TextArea by singleAssign()
     var textAreaExperiment: TextArea by singleAssign()
-    var textAreaTotalInfo: TextArea by singleAssign()
-    var textAreaResults: TextArea by singleAssign()
 
     var buttonStartExperiment: Button by singleAssign()
-    var buttonCalculation: Button by singleAssign()
 
     private lateinit var currentItem: ExperimentObjectsType
 
     private var addIcon = ImageView("ru/avem/kspemstator/icon/add.png")
     private var deleteIcon = ImageView("ru/avem/kspemstator/icon/delete.png")
     private var editIcon = ImageView("ru/avem/kspemstator/icon/edit.png")
-
-
-    var textFieldU: TextField by singleAssign()
-    var textFieldU2: TextField by singleAssign()
-    var textFieldU1: TextField by singleAssign()
-    var textFieldI1: TextField by singleAssign()
-    var textFieldP1: TextField by singleAssign()
 
     override fun onBeforeShow() {
         addIcon.fitHeight = 16.0
@@ -66,7 +54,6 @@ class MainView : View("Испытание активной стали стато
 
     override fun onDock() {
         controller.refreshObjectsTypes()
-        buttonStartExperiment.isDisable = true
     }
 
     override val root = borderpane {
@@ -122,7 +109,7 @@ class MainView : View("Испытание активной стали стато
                         }
                     }
                 }
-            }
+            }.addClass(Styles.megaHard)
         }
         center {
             anchorpane {
@@ -133,6 +120,7 @@ class MainView : View("Испытание активной стали стато
                         topAnchor = 16.0
                         bottomAnchor = 16.0
                     }
+                    alignmentProperty().set(Pos.CENTER)
                     hboxEdit = hbox(spacing = 16.0) {
                         minWidth = 300.0
                         prefWidth = 300.0
@@ -140,14 +128,14 @@ class MainView : View("Испытание активной стали стато
 
                         label("Тип двигателя:")
                         comboboxTypeObject = combobox {
-                            prefWidth = 300.0
+                            prefWidth = 500.0
                         }
                         label("Номер двигателя:")
                         textFieldFacNumber = textfield {
-                            prefWidth = 300.0
+                            prefWidth = 500.0
                             callKeyBoard()
-                        }.addClass(medium)
-                    }
+                        }
+                    }.addClass(Styles.megaHard)
                     hbox(spacing = 16.0) {
                         anchorpaneConstraints {
                             leftAnchor = 16.0
@@ -157,142 +145,26 @@ class MainView : View("Испытание активной стали стато
                         }
                         alignment = Pos.CENTER
 
-//                        hbox(spacing = 4.0) {
-//                            alignmentProperty().set(Pos.TOP_CENTER)
-//                            button("UP") {
-//                                action {
-//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
-//                                    CommunicationModel.owenPR200Controller.onRegisterInKMS(UP)
-//                                }
-//                            }
-//                            button("DOWN") {
-//                                action {
-//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
-//                                    CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
-//                                }
-//                            }
-//                            button("STOP") {
-//                                action {
-//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
-//                                    CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
-//                                }
-//                            }
-//                        }
-//                        label(sliderForward.stringBinding {
-//                            "ШИМ вперед: ${sliderForward.value}%"
-//                        })
-//                        slider(0, 100, 1) {
-//                            isShowTickLabels = true
-//                            isShowTickMarks = true
-//                            valueProperty().bindBidirectional(sliderForward)
-//                        }
-//                        label(sliderBack.stringBinding {
-//                            "ШИМ назад: ${sliderBack.value}%"
-//                        })
-//                        slider(0, 100, 1) {
-//                            isShowTickLabels = true
-//                            isShowTickMarks = true
-//                            valueProperty().bindBidirectional(sliderBack)
-//                        }
                         vBoxMain = vbox(spacing = 16.0) {
                             alignmentProperty().set(Pos.CENTER)
-                            hbox(spacing = 32.0) {
-                                vbox(spacing = 16.0) {
-                                    alignmentProperty().set(Pos.CENTER)
-                                    textAreaCalculate = textarea {
-                                        prefHeight = 440.0
-                                    }.addClass(Styles.hard)
-                                    buttonCalculation = button("Расчет") {
-                                        prefWidth = 300.0
-                                        action {
-                                            controller.calculate()
-                                        }
-                                    }.addClass(Styles.hard)
-                                }
-                                vbox(spacing = 16.0) {
-                                    alignmentProperty().set(Pos.CENTER)
-                                    textAreaExperiment = textarea {
-                                        prefHeight = 326.0
-                                    }.addClass(Styles.hard)
-                                    hbox(spacing = 16.0) {
-                                        alignmentProperty().set(Pos.CENTER)
-                                        vbox(spacing = 4.0) {
-                                            alignmentProperty().set(Pos.CENTER)
-                                            label("Uo расч, В") {
-                                            }.addClass(Styles.hard)
-                                            textFieldU = textfield {
-                                                maxWidth = 160.0
-                                                minWidth = 160.0
-                                                alignmentProperty().set(Pos.CENTER)
-                                            }.addClass(Styles.hard)
-                                        }
-                                        vbox(spacing = 4.0) {
-                                            alignmentProperty().set(Pos.CENTER)
-                                            label("Ui изм, В") {
-                                            }.addClass(Styles.hard)
-                                            textFieldU2 = textfield {
-                                                maxWidth = 160.0
-                                                minWidth = 160.0
-                                            }.addClass(Styles.hard)
-                                        }
-                                        vbox(spacing = 4.0) {
-                                            alignmentProperty().set(Pos.CENTER)
-                                            label("Uн намаг, В") {
-                                            }.addClass(Styles.hard)
-                                            textFieldU1 = textfield {
-                                                maxWidth = 160.0
-                                                minWidth = 160.0
-                                            }.addClass(Styles.hard)
-                                        }
-                                        vbox(spacing = 4.0) {
-                                            alignmentProperty().set(Pos.CENTER)
-                                            label("Iн намаг, А") {
-                                            }.addClass(Styles.hard)
-                                            textFieldI1 = textfield {
-                                                maxWidth = 160.0
-                                                minWidth = 160.0
-                                            }.addClass(Styles.hard)
-                                        }
-                                        vbox(spacing = 4.0) {
-                                            alignmentProperty().set(Pos.CENTER)
-                                            label("Pн акт, Вт") {
-                                            }.addClass(Styles.hard)
-                                            textFieldP1 = textfield {
-                                                maxWidth = 160.0
-                                                minWidth = 160.0
-                                            }.addClass(Styles.hard)
-                                        }
+
+                            buttonStartExperiment = button("Испытание") {
+                                isDefaultButton = true
+                                prefWidth = 900.0
+                                prefHeight = 200.0
+                                action {
+                                    if (controller.isExperimentRunning) {
+                                        controller.stopExperiment()
+                                    } else {
+                                        controller.startExperiment()
                                     }
-                                    buttonStartExperiment = button("Испытание") {
-                                        prefWidth = 300.0
-                                        action {
-                                            if (controller.isExperimentRunning) {
-                                                controller.stopExperiment()
-                                            } else {
-                                                controller.startExperiment()
-                                            }
-                                        }
-                                    }.addClass(Styles.hard)
                                 }
-                            }
-                            hBoxResult = hbox(spacing = 32.0) {
-                                vbox(spacing = 16.0) {
-                                    alignmentProperty().set(Pos.CENTER)
-                                    label("Общие данные:") {
-                                    }.addClass(Styles.hard)
-                                    textAreaTotalInfo = textarea {
-                                        prefHeight = 440.0
-                                    }.addClass(Styles.hard)
-                                }
-                                vbox(spacing = 16.0) {
-                                    alignmentProperty().set(Pos.CENTER)
-                                    label("Результаты испытания:") {
-                                    }.addClass(Styles.hard)
-                                    textAreaResults = textarea {
-                                        prefHeight = 440.0
-                                    }.addClass(Styles.hard)
-                                }
-                            }
+                            }.addClass(Styles.stopStart)
+
+                            textAreaExperiment = textarea {
+                                prefHeight = 600.0
+                                prefWidth = 1800.0
+                            }.addClass(Styles.hard)
                         }
                     }
                 }
@@ -311,15 +183,7 @@ class MainView : View("Испытание активной стали стато
     private fun clearFields() {
         comboboxTypeObject.selectionModel.select(0)
         textFieldFacNumber.text = ""
-        textAreaTotalInfo.text = ""
         textAreaExperiment.text = ""
-        textAreaCalculate.text = ""
-        textAreaResults.text = ""
-        textFieldU.text = ""
-        textFieldI1.text = ""
-        textFieldP1.text = ""
-        textFieldU1.text = ""
-        textFieldU2.text = ""
     }
 
     fun handleAddTestItem() {

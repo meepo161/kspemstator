@@ -106,8 +106,8 @@ class AddMarkWindow : View("Добавить материал") {
 
                 alignmentProperty().set(Pos.CENTER)
 
-                hbox(spacing = 16.0) {
-                    alignmentProperty().set(Pos.CENTER_RIGHT)
+                vbox(spacing = 4.0) {
+                    alignmentProperty().set(Pos.CENTER)
 
                     label("Марка стали:")
                     textFieldMark = textfield {
@@ -116,8 +116,8 @@ class AddMarkWindow : View("Добавить материал") {
                     }
                 }
 
-                hbox(spacing = 16.0) {
-                    alignmentProperty().set(Pos.CENTER_RIGHT)
+                vbox(spacing = 4.0) {
+                    alignmentProperty().set(Pos.CENTER)
 
                     label("Плотность стали, кг/м³:")
                     textFieldDensity = textfield {
@@ -126,8 +126,8 @@ class AddMarkWindow : View("Добавить материал") {
                     }
                 }
 
-                hbox(spacing = 16.0) {
-                    alignmentProperty().set(Pos.CENTER_RIGHT)
+                vbox(spacing = 4.0) {
+                    alignmentProperty().set(Pos.CENTER)
 
                     label("Удельные потери, Вт/кг:")
                     textfieldLosses = textfield {
@@ -136,8 +136,8 @@ class AddMarkWindow : View("Добавить материал") {
                     }
                 }
 
-                hbox(spacing = 16.0) {
-                    alignmentProperty().set(Pos.CENTER_RIGHT)
+                vbox(spacing = 4.0) {
+                    alignmentProperty().set(Pos.CENTER)
 
                     label("Напряженность, А/м")
                     textfieldIntensity = textfield {
