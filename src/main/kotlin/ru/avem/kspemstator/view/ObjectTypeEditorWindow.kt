@@ -20,6 +20,8 @@ import java.nio.file.Paths
 class ObjectTypeEditorWindow : View("Добавить материал") {
 
     var textfieldObjectType: TextField by singleAssign()
+    var textfieldPower: TextField by singleAssign()
+    var textfieldFrequency: TextField by singleAssign()
     var textfieldInside: TextField by singleAssign()
     var textfieldOutside: TextField by singleAssign()
     var textfieldIronLength: TextField by singleAssign()
@@ -60,7 +62,8 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
     }
 
     override val root = anchorpane {
-
+        prefWidth = 1280.0
+        maxHeight = 780.0
         hbox(spacing = 16.0) {
             anchorpaneConstraints {
                 leftAnchor = 16.0
@@ -72,9 +75,8 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
 
             tableViewObjects = tableview {
                 columnResizePolicyProperty().set(TableView.CONSTRAINED_RESIZE_POLICY)
-                prefWidth = 1400.0
+                prefWidth = 1000.0
                 items = controller.getObjects()
-
                 column("Тип", ExperimentObjectsType::objectType) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
@@ -87,7 +89,31 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                     }
                 }.addClass(Styles.medium)
 
-                column("Наружный диаметр, мм", ExperimentObjectsType::outsideD) {
+                column("Мощность, кВт", ExperimentObjectsType::power) {
+                    onEditCommit = EventHandler { cell ->
+                        transaction {
+                            ObjectsTypes.update({
+                                ObjectsTypes.power eq selectedItem!!.power
+                            }) {
+                                it[power] = cell.newValue
+                            }
+                        }
+                    }
+                }.addClass(Styles.medium)
+
+                column("Частота\nвращения", ExperimentObjectsType::frequency) {
+                    onEditCommit = EventHandler { cell ->
+                        transaction {
+                            ObjectsTypes.update({
+                                ObjectsTypes.frequency eq selectedItem!!.frequency
+                            }) {
+                                it[frequency] = cell.newValue
+                            }
+                        }
+                    }
+                }.addClass(Styles.medium)
+
+                column("Наружный\nдиаметр, мм", ExperimentObjectsType::outsideD) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
                             ObjectsTypes.update({
@@ -99,7 +125,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                     }
                 }.addClass(Styles.medium)
 
-                column("Внутренний диаметр", ExperimentObjectsType::insideD) {
+                column("Внутренний\nдиаметр", ExperimentObjectsType::insideD) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
                             ObjectsTypes.update({
@@ -123,7 +149,7 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                     }
                 }.addClass(Styles.medium)
 
-                column("Высота спинки", ExperimentObjectsType::backHeight) {
+                column("Высота\nспинки", ExperimentObjectsType::backHeight) {
                     onEditCommit = EventHandler { cell ->
                         transaction {
                             ObjectsTypes.update({
@@ -170,89 +196,129 @@ class ObjectTypeEditorWindow : View("Добавить материал") {
                         }
                     }
                 }.addClass(Styles.medium)
-
             }
-            vbox(spacing = 16.0) {
+            vbox(spacing = 0.0) {
                 anchorpaneConstraints {
-                    leftAnchor = 16.0
-                    rightAnchor = 16.0
-                    topAnchor = 16.0
-                    bottomAnchor = 16.0
+                    leftAnchor = 4.0
+                    rightAnchor = 4.0
+                    topAnchor = 4.0
+                    bottomAnchor = 4.0
                 }
 
                 alignmentProperty().set(Pos.CENTER)
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
 
                     label("Тип двигателя:")
                     textfieldObjectType = textfield {
-                        prefWidth = 240.0
-                        maxWidth = 240.0
+                        prefWidth = 200.0
+                        maxWidth = 200.0
                         callKeyBoard()
                     }.addClass(Styles.medium)
                 }
-                vbox(spacing = 4.0) {
+
+                vbox(spacing = 0.0) {
+                    alignmentProperty().set(Pos.CENTER)
+
+                    label("Мощность двигателя, кВт:")
+                    textfieldPower = textfield {
+                        prefWidth = 200.0
+                        maxWidth = 200.0
+                        callKeyBoard()
+                    }.addClass(Styles.medium)
+                }
+
+                vbox(spacing = 0.0) {
+                    alignmentProperty().set(Pos.CENTER)
+
+                    label("Частота вращения:")
+                    textfieldFrequency = textfield {
+                        prefWidth = 200.0
+                        maxWidth = 200.0
+                        callKeyBoard()
+                    }.addClass(Styles.medium)
+                }
+
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
 
                     label("Наружный диаметр, мм:")
                     textfieldOutside = textfield {
-                        prefWidth = 240.0
-                        maxWidth = 240.0
+                        prefWidth = 200.0
+                        maxWidth = 200.0
                         callKeyBoard()
                     }.addClass(Styles.medium)
                 }
 
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
 
                     label("Внутренний диаметр, мм:")
                     textfieldInside = textfield {
-                        prefWidth = 240.0
-                        maxWidth = 240.0
+                        prefWidth = 200.0
+                        maxWidth = 200.0
                         callKeyBoard()
                     }.addClass(Styles.medium)
                 }
 
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
 
                     label("Длина железа, мм:")
                     textfieldIronLength = textfield {
-                        prefWidth = 240.0
-                        maxWidth = 240.0
+                        prefWidth = 200.0
+                        maxWidth = 200.0
                         callKeyBoard()
                     }.addClass(Styles.medium)
                 }
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
 
                     label("Высота спинки, мм:")
                     textfieldBackHeight = textfield {
-                        prefWidth = 240.0
-                        maxWidth = 240.0
+                        prefWidth = 200.0
+                        maxWidth = 200.0
                         callKeyBoard()
                     }.addClass(Styles.medium)
                 }
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
                     label("Материал станины:")
                     comboBoxMaterial = combobox {
-                        prefWidth = 240.0
+                        prefWidth = 200.0
 
                     }
                 }
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
                     label("Тип изоляции:")
                     comboBoxInsulation = combobox {
-                        prefWidth = 240.0
+                        prefWidth = 200.0
                     }
                 }
-                vbox(spacing = 4.0) {
+                vbox(spacing = 0.0) {
                     alignmentProperty().set(Pos.CENTER)
                     label("Марка")
                     comboBoxMark = combobox {
-                        prefWidth = 240.0
+                        prefWidth = 200.0
+                    }
+                }
+                vbox(spacing = 0.0) {
+                    alignmentProperty().set(Pos.CENTER)
+                    button("Автовыбор стали") {
+                        prefWidth = 200.0
+                        action {
+                            if (!textfieldPower.text.isNullOrEmpty()) {
+                                when {
+                                    textfieldPower.text.toDouble() < 20 -> {
+                                        comboBoxMark.selectionModel.select(1)
+                                    }
+                                    textfieldPower.text.toDouble() < 100 -> {
+                                        comboBoxMark.selectionModel.select(0)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

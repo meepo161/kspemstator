@@ -40,6 +40,7 @@ object CommunicationModel : Observer {
     var i2 = 0.0
     var i3 = 0.0
     var p1 = 0.0
+    var cosA = 0.0
 
     init {
         Thread {
@@ -60,6 +61,7 @@ object CommunicationModel : Observer {
                                 is ParmaT400Controller -> {
                                     try {
                                         it.readAllRegisters()
+                                        it.readCos()
                                         it.isResponding = true
                                     } catch (e: Exception) {
                                         it.isResponding = false
@@ -120,6 +122,7 @@ object CommunicationModel : Observer {
                     ParmaT400Controller.Parameters.I2 -> i2 = value
                     ParmaT400Controller.Parameters.I3 -> i3 = value
                     ParmaT400Controller.Parameters.P1 -> p1 = value
+                    ParmaT400Controller.Parameters.COSA -> cosA = value
                 }
             }
         }

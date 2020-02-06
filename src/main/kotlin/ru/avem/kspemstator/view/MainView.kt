@@ -1,6 +1,5 @@
 package ru.avem.kspemstator.view
 
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
@@ -12,6 +11,7 @@ import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.ExperimentObjectsType
 import ru.avem.kspemstator.database.entities.User
 import ru.avem.kspemstator.utils.Toast
+import ru.avem.kspemstator.utils.callKeyBoard
 import ru.avem.kspemstator.view.Styles.Companion.medium
 import tornadofx.*
 import java.awt.Desktop
@@ -24,6 +24,7 @@ class MainView : View("Испытание активной стали стато
     private val controller: MainViewController by inject()
 
     var comboboxUserSelector: ComboBox<User> by singleAssign()
+    var mainMenubar: MenuBar by singleAssign()
 
     var comboboxTypeObject: ComboBox<ExperimentObjectsType> by singleAssign()
 
@@ -57,10 +58,10 @@ class MainView : View("Испытание активной стали стато
     }
 
     override val root = borderpane {
-        maxWidth = 1920.0
-        maxHeight = 1200.0
+        maxWidth = 1280.0
+        maxHeight = 800.0
         top {
-            menubar {
+            mainMenubar = menubar {
                 menu("Меню") {
                     item("Очистить") {
                         action {
@@ -99,7 +100,12 @@ class MainView : View("Испытание активной стали стато
                         }
                     }
                     item("Протоколы") {
-
+                        action {
+                            find<ProtocolListWindow>().openModal(
+                                modality = Modality.APPLICATION_MODAL, escapeClosesWindow = true,
+                                resizable = false, owner = this@MainView.currentWindow
+                            )
+                        }
                     }
                 }
                 menu("Информация") {
@@ -122,20 +128,20 @@ class MainView : View("Испытание активной стали стато
                     }
                     alignmentProperty().set(Pos.CENTER)
                     hboxEdit = hbox(spacing = 16.0) {
-                        minWidth = 300.0
-                        prefWidth = 300.0
+                        minWidth = 360.0
+                        prefWidth = 360.0
                         alignmentProperty().set(Pos.CENTER)
 
                         label("Тип двигателя:")
                         comboboxTypeObject = combobox {
-                            prefWidth = 500.0
+                            prefWidth = 360.0
                         }
                         label("Номер двигателя:")
                         textFieldFacNumber = textfield {
-                            prefWidth = 500.0
+                            prefWidth = 360.0
                             callKeyBoard()
                         }
-                    }.addClass(Styles.megaHard)
+                    }.addClass(Styles.extraHard)
                     hbox(spacing = 16.0) {
                         anchorpaneConstraints {
                             leftAnchor = 16.0
@@ -153,10 +159,16 @@ class MainView : View("Испытание активной стали стато
                                 prefWidth = 900.0
                                 prefHeight = 200.0
                                 action {
-                                    if (controller.isExperimentRunning) {
-                                        controller.stopExperiment()
+                                    if (comboboxTypeObject.selectionModel.selectedItem == null) {
+                                        Toast.makeText("Выберите тип двигателя").show(Toast.ToastType.WARNING)
+                                    } else if (textFieldFacNumber.text.isNullOrEmpty()) {
+                                        Toast.makeText("Введите номер двигателя").show(Toast.ToastType.WARNING)
                                     } else {
-                                        controller.startExperiment()
+                                        if (controller.isExperimentRunning) {
+                                            controller.stopExperiment()
+                                        } else {
+                                            controller.startExperiment()
+                                        }
                                     }
                                 }
                             }.addClass(Styles.stopStart)
@@ -171,14 +183,6 @@ class MainView : View("Испытание активной стали стато
             }
         }
     }.addClass(Styles.baseColorFoo, medium)
-
-    fun TextField.callKeyBoard() {
-        onTouchPressed = EventHandler {
-            Desktop.getDesktop()
-                .open(Paths.get("C:/Program Files/Common Files/Microsoft Shared/ink/TabTip.exe").toFile())
-            requestFocus()
-        }
-    }
 
     private fun clearFields() {
         comboboxTypeObject.selectionModel.select(0)

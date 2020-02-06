@@ -28,27 +28,27 @@ class Styles : Stylesheet() {
         }
 
         medium {
-            fontSize = 22.px
+            fontSize = 18.px
             fontWeight = FontWeight.BOLD
         }
 
         hard {
-            fontSize = 26.px
+            fontSize = 20.px
             fontWeight = FontWeight.BOLD
         }
 
         extraHard {
-            fontSize = 32.px
+            fontSize = 24.px
             fontWeight = FontWeight.EXTRA_BOLD
         }
 
         megaHard {
-            fontSize = 48.px
+            fontSize = 32.px
             fontWeight = FontWeight.EXTRA_BOLD
         }
 
         stopStart {
-            fontSize = 80.px
+            fontSize = 60.px
             fontWeight = FontWeight.EXTRA_BOLD
         }
 
@@ -66,10 +66,10 @@ class Styles : Stylesheet() {
 
         anchorPaneBorders {
             borderColor += CssBox(
-                    top = c("grey"),
-                    bottom = c("grey"),
-                    left = c("grey"),
-                    right = c("grey")
+                top = c("grey"),
+                bottom = c("grey"),
+                left = c("grey"),
+                right = c("grey")
             )
         }
 
@@ -79,10 +79,10 @@ class Styles : Stylesheet() {
 
         roundButton {
             backgroundRadius += CssBox(
-                    top = 30.px,
-                    bottom = 30.px,
-                    left = 30.px,
-                    right = 30.px
+                top = 30.px,
+                bottom = 30.px,
+                left = 30.px,
+                right = 30.px
             )
         }
 
@@ -103,5 +103,6 @@ class Styles : Stylesheet() {
                 }
             }
         }
+
     }
 }

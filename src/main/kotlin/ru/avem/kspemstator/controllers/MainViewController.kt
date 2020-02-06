@@ -6,42 +6,40 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.communication.CommunicationModel
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO2
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO3
-import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO4
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DO5
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.DOWN
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.POWER
 import ru.avem.kspemstator.communication.devices.pr200.OwenPR200Controller.Companion.UP
-import ru.avem.kspemstator.database.entities.ExperimentObjectsType
-import ru.avem.kspemstator.database.entities.MarksObjects
-import ru.avem.kspemstator.database.entities.MarksTypes
-import ru.avem.kspemstator.database.entities.ObjectsTypes
+import ru.avem.kspemstator.database.entities.*
 import ru.avem.kspemstator.utils.Toast
 import ru.avem.kspemstator.view.MainView
 import tornadofx.Controller
 import tornadofx.observable
+import tornadofx.selectedItem
 import java.text.SimpleDateFormat
 
 class MainViewController : Controller() {
 
     val view: MainView by inject()
 
-    private var insideD: Double = 0.0
-    private var outsideD: Double = 0.0
+    private var insideDiametr: Double = 0.0
+    private var outsideDiametr: Double = 0.0
     private var l: Double = 0.0
-    private var losses: Double = 0.0
-    private var intensity: Double = 0.0
+    private var lossesMark: Double = 0.0
+    private var intensityMark: Double = 0.0
+    private var densityMark: Double = 0.0
     private var h: Double = 0.0
     private var lakt: Double = 0.0
     private var lsr: Double = 0.0
     private var sh: Double = 0.0
     private var v: Double = 0.0
     private var m: Double = 0.0
-    private var u: Double = 0.0
+    private var uZadannoe: Double = 0.0
     private var ws: Int = 0
-    private var bf: Double = 0.0
-    private var pf: Double = 0.0
-    private var pt: Double = 0.0
-    private var hf: Double = 0.0
+    private var measuringBf: Double = 0.0
+    private var measuringPf: Double = 0.0
+    private var measuringPt: Double = 0.0
+    private var measuringHf: Double = 0.0
 
     @Volatile
     var measuringUA: Double = 0.0
@@ -51,6 +49,8 @@ class MainViewController : Controller() {
     var measuringIA: Double = 0.0
     @Volatile
     var measuringPA: Double = 0.0
+    @Volatile
+    var measuringCos: Double = 0.0
 
     @Volatile
     var isExperimentRunning = false
@@ -76,25 +76,28 @@ class MainViewController : Controller() {
             while (isExperimentRunning) {
                 when {
                     !CommunicationModel.di3 -> {
-                        setCause("di3")
+                        setCause("Обесточьте установку\nПроверьте соединение измерительной катушки")
                     }
                     !CommunicationModel.di4 -> {
-                        setCause("di4")
+                        setCause(
+                            "Обесточьте установку\n" +
+                                    "Проверьте соединение намагничивающей катушки"
+                        )
                     }
 //                    CommunicationModel.di5 -> {
 //                        setCause("di5")
 //                    }
-                    CommunicationModel.di6 -> {
-//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+                    CommunicationModel.di6 && !CommunicationModel.di7 && CommunicationModel.di8 -> {
+                        appendOneMessageToLog("Проверьте заземление")
                     }
-                    CommunicationModel.di7 -> {
-//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
-                    }
-                    !CommunicationModel.di8 -> {
-//                        appendOneMessageToLog("Проверьте заземление. Переверните сетевую вилку")
+                    CommunicationModel.di6 && !CommunicationModel.di7 && !CommunicationModel.di8 -> {
+                        appendOneMessageToLog("Неверная фазировка питания стенда")
                     }
                     CommunicationModel.i1 > 15 -> {
-                        setCause("Ток превысил 15")
+                        setCause(
+                            "Обесточьте установку\n" +
+                                    "Превышение тока в установке"
+                        )
                     }
                 }
             }
@@ -143,40 +146,31 @@ class MainViewController : Controller() {
     }
 
     fun calculate() {
-        when {
-            view.comboboxTypeObject.selectionModel.selectedItem == null -> {
-                Toast.makeText("Выберите тип двигателя").show(Toast.ToastType.WARNING)
-            }
-            view.textFieldFacNumber.text.isNullOrEmpty() -> {
-                Toast.makeText("Введите заводской номер двигателя").show(Toast.ToastType.WARNING)
-            }
-            else -> {
-                var p = 0.0
-                transaction {
-                    val ourObjectType = MarksObjects.find() {
-                        MarksTypes.mark eq view.comboboxTypeObject.value.mark
-                    }.toList()
-                    p = ourObjectType[0].density.toDouble()
-                    losses = ourObjectType[0].losses.toDouble()
-                    intensity = ourObjectType[0].intensity.toDouble()
-                }
-                val ki: Double = if (view.comboboxTypeObject.value.insulation == "Лак") {
-                    0.93
-                } else {
-                    0.95
-                }
-                insideD = view.comboboxTypeObject.value.insideD.toDouble() //TODO может понадобится
-                outsideD = view.comboboxTypeObject.value.outsideD.toDouble()
-                l = view.comboboxTypeObject.value.ironLength.toDouble()
-                h = view.comboboxTypeObject.value.backHeight.toDouble()
-                lakt = ki * l * 0.001
-                lsr = Math.PI * (outsideD - h) * 0.001
-                sh = lakt * h * 0.001
-                v = lsr * sh
-                m = v * p
-                u = 4.44 * 22 * 50 * sh
-            }
+        var p = 0.0
+        transaction {
+            val ourObjectType = MarksObjects.find() {
+                MarksTypes.mark eq view.comboboxTypeObject.value.mark
+            }.toList()
+            p = ourObjectType[0].density.toDouble()
+            lossesMark = ourObjectType[0].losses.toDouble()
+            intensityMark = ourObjectType[0].intensity.toDouble()
+            densityMark = ourObjectType[0].density.toDouble()
         }
+        val ki: Double = if (view.comboboxTypeObject.value.insulation == "Лак") {
+            0.93
+        } else {
+            0.95
+        }
+        insideDiametr = view.comboboxTypeObject.value.insideD.toDouble() //TODO может понадобится
+        outsideDiametr = view.comboboxTypeObject.value.outsideD.toDouble()
+        l = view.comboboxTypeObject.value.ironLength.toDouble()
+        h = view.comboboxTypeObject.value.backHeight.toDouble()
+        lakt = ki * l * 0.001
+        lsr = Math.PI * (outsideDiametr - h) * 0.001
+        sh = lakt * h * 0.001
+        v = lsr * sh
+        m = v * p
+        uZadannoe = 4.44 * 22 * 50 * sh
     }
 
     fun stopExperiment() {
@@ -190,6 +184,7 @@ class MainViewController : Controller() {
 
         Platform.runLater {
             view.hboxEdit.isDisable = true
+            view.mainMenubar.isDisable = true
             view.buttonStartExperiment.text = "Отменить"
             view.textAreaExperiment.text = ""
         }
@@ -198,23 +193,32 @@ class MainViewController : Controller() {
 
         Thread {
 
-            if (u > 150) {
+            if (uZadannoe > 150) {
                 cause = "Напряжение больше допустимого"
                 isExperimentRunning = false
             } else {
-                appendOneMessageToLog("Напряжение расчитанное = " + String.format("%.2f", u))
+                appendOneMessageToLog("Напряжение расчетное = " + String.format("%.2f В", uZadannoe))
             }
 
             if (isExperimentRunning) {
                 appendOneMessageToLog("Запуск испытания")
             }
-
+            var tryNumberPR = 0
             while (isExperimentRunning && !CommunicationModel.owenPR200Controller.isResponding) {
+                tryNumberPR++
                 Thread.sleep(100)
+                if (tryNumberPR > 100) {
+                    setCause("Нет связи с ПР200")
+                }
             }
 
+            var tryNumberParma = 0
             while (isExperimentRunning && !CommunicationModel.parmaT400Controller.isResponding) {
+                tryNumberParma++
                 Thread.sleep(100)
+                if (tryNumberParma > 100) {
+                    setCause("Нет связи с ПармаТ400")
+                }
             }
 
             if (isExperimentRunning && isDevicesResponding) {
@@ -236,17 +240,16 @@ class MainViewController : Controller() {
             if (isExperimentRunning && isDevicesResponding) {
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(POWER)
                 when {
-                    u <= 5 -> {
-                        CommunicationModel.owenPR200Controller.onRegisterInKMS(DO4)
+                    uZadannoe <= 5 -> {
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO3)
                         ws = 10
                     }
-                    u <= 40 -> {
+                    uZadannoe <= 40 -> {
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO3)
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO5)
                         ws = 21
                     }
-                    u <= 150 -> {
+                    uZadannoe <= 150 -> {
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO2)
                         CommunicationModel.owenPR200Controller.onRegisterInKMS(DO5)
                         ws = 21
@@ -264,7 +267,7 @@ class MainViewController : Controller() {
             }
 
             if (isExperimentRunning && isDevicesResponding) {
-                regulationVoltage(u)
+                regulationVoltage(uZadannoe)
                 showResults()
             }
 
@@ -286,10 +289,12 @@ class MainViewController : Controller() {
                 appendOneMessageToLog("Потеряна связь с приборами")
             } else {
                 appendOneMessageToLog("Испытание завершено успешно")
+                saveProtocolToDB()
             }
 
             Platform.runLater {
                 view.hboxEdit.isDisable = false
+                view.mainMenubar.isDisable = false
                 view.buttonStartExperiment.isDisable = false
                 view.buttonStartExperiment.text = "Испытание"
             }
@@ -325,39 +330,99 @@ class MainViewController : Controller() {
         measuringUB = CommunicationModel.u2
         measuringIA = CommunicationModel.i1
         measuringPA = CommunicationModel.p1
+        measuringCos = CommunicationModel.cosA
         appendOneMessageToLog(String.format("Напряжение = %.2f В", measuringUB))
         appendOneMessageToLog(String.format("Ток It =  %.2f А", measuringIA))
         appendOneMessageToLog(String.format("Напряжение Ut = %.2f В", measuringUA))
         appendOneMessageToLog(String.format("Активная мощность Pt = %.2f Вт", measuringPA))
+        appendOneMessageToLog(String.format("cos A = %.2f", measuringCos))
 
         CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
         CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
     }
 
     private fun showResults() {
-        bf = measuringUB / (4.44 * 22 * 50 * sh)
-        pf = measuringPA * (21.0 / 22.0) * (1.0 / (bf * bf))
-        pt = pf / m
-        hf = (measuringIA * 21) / lsr
+        measuringBf = measuringUB / (4.44 * 22 * 50 * sh)
+        measuringPf = measuringPA * (21.0 / 22.0) * (1.0 / (measuringBf * measuringBf))
+        measuringPt = if (view.comboboxTypeObject.selectedItem!!.material == "Сталь") {
+            measuringPf / m - ((measuringPf / m) / 10.0)
+        } else {
+            measuringPf / m
+        }
+        measuringHf = (measuringIA * 21) / lsr
 
         Platform.runLater {
-            appendOneMessageToLog(String.format("Фактическая индукция Bf = %.4f Тл", bf))
-            appendOneMessageToLog(String.format("Фактическая активная мощность Pf = %.4f Вт", pf))
-            appendOneMessageToLog(String.format("Удельные потери Pt = %.4f Вт/кг", pt))
-            appendOneMessageToLog(String.format("Напряженность Hf =  %.4f А/м", hf))
+            appendOneMessageToLog(String.format("Фактическая индукция Bf = %.4f Тл", measuringBf))
+            appendOneMessageToLog(String.format("Фактическая активная мощность Pf = %.4f Вт", measuringPf))
+            appendOneMessageToLog(String.format("Удельные потери Pt = %.4f Вт/кг", measuringPt))
+            appendOneMessageToLog(String.format("Напряженность Hf =  %.4f А/м", measuringHf))
             appendOneMessageToLog("Заключение:")
-            if (losses >= pt) {
-                appendOneMessageToLog(String.format("Запас по удельным потерям в %.2f раз(а)", losses/pt))
+
+            if (lossesMark >= measuringPt) {
+                appendOneMessageToLog(
+                    String.format(
+                        "Запас по удельным потерям на %.2f%",
+                        (measuringPt / (lossesMark / 100))
+                    )
+                )
             } else {
-                appendOneMessageToLog(String.format("Превышение по удельным потерям в %.2f раз(а)", losses/pt))
+                appendOneMessageToLog(
+                    String.format(
+                        "Превышение по удельным потерям на %.2f%",
+                        (measuringPt / (lossesMark / 100))
+                    )
+                )
             }
 
-            if (intensity > hf) {
-                appendOneMessageToLog(String.format("Запас по магнитным свойствам в %.2f раз(а)", intensity/hf))
+            if (intensityMark >= measuringHf) {
+                appendOneMessageToLog(
+                    String.format(
+                        "Запас по магнитным свойствам на %.2f%",
+                        (measuringHf / (intensityMark / 100))
+                    )
+                )
             } else {
-                appendOneMessageToLog(String.format("Превышение по магнитным свойствам в %.2f раз(а)", intensity/hf))
+                appendOneMessageToLog(
+                    String.format(
+                        "Превышение по магнитным свойствам на %.2f%",
+                        (measuringHf / (intensityMark / 100))
+                    )
+                )
             }
         }
     }
 
+    private fun saveProtocolToDB() {
+        val dateFormatter = SimpleDateFormat("dd.MM.y")
+        val timeFormatter = SimpleDateFormat("HH:mm:ss")
+
+        val unixTime = System.currentTimeMillis()
+
+        transaction {
+            Protocol.new {
+                date = dateFormatter.format(unixTime).toString()
+                time = timeFormatter.format(unixTime).toString()
+                factoryNumber = view.textFieldFacNumber.text
+                objectType = view.comboboxTypeObject.selectedItem.toString()
+                insideD = view.comboboxTypeObject.value.insideD
+                outsideD = view.comboboxTypeObject.value.outsideD
+                ironLength = view.comboboxTypeObject.value.ironLength
+                backHeight = view.comboboxTypeObject.value.backHeight
+                material = view.comboboxTypeObject.value.material
+                insulation = view.comboboxTypeObject.value.insulation
+                mark = view.comboboxTypeObject.value.mark
+                density = densityMark.toString()
+                losses = lossesMark.toString()
+                intensity = intensityMark.toString()
+                u1 = String.format("%.2f", measuringUA)
+                i1 = String.format("%.2f", measuringIA)
+                p1 = String.format("%.2f", measuringPA)
+                bf = String.format("%.2f", measuringBf)
+                pf = String.format("%.2f", measuringPf)
+                pt = String.format("%.2f", measuringPt)
+                hf = String.format("%.2f", measuringHf)
+            }
+        }
+        appendMessageToLog("Протокол сохранён")
+    }
 }

@@ -5,6 +5,7 @@ import javafx.scene.control.TextField
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.avem.kspemstator.controllers.MainViewController
 import ru.avem.kspemstator.database.entities.User
+import ru.avem.kspemstator.utils.callKeyBoard
 import tornadofx.*
 import tornadofx.controlsfx.warningNotification
 
@@ -41,6 +42,7 @@ class UserAddWindow : View("Добавить пользователя") {
                 label("Логин")
                 textFieldLogin = textfield {
                     prefWidth = 200.0
+                    callKeyBoard()
                 }
             }
 
@@ -50,6 +52,7 @@ class UserAddWindow : View("Добавить пользователя") {
                 label("Пароль")
                 textFieldPassword = textfield {
                     prefWidth = 200.0
+                    callKeyBoard()
                 }
             }
 
@@ -59,6 +62,7 @@ class UserAddWindow : View("Добавить пользователя") {
                 label("ФИО")
                 textFieldFullName = textfield {
                     prefWidth = 200.0
+                    callKeyBoard()
                 }
             }
 

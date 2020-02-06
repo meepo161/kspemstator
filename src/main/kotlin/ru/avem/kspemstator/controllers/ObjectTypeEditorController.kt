@@ -43,6 +43,8 @@ class ObjectTypeEditorController : Controller() {
     fun isValuesEmpty(): Boolean {
         return window.textfieldOutside.text.isNullOrEmpty() ||
                 window.textfieldInside.text.isNullOrEmpty() ||
+                window.textfieldPower.text.isNullOrEmpty() ||
+                window.textfieldFrequency.text.isNullOrEmpty() ||
                 window.textfieldBackHeight.text.isNullOrEmpty() ||
                 window.textfieldIronLength.text.isNullOrEmpty() ||
                 window.comboBoxMaterial.selectionModel.selectedItem.isNullOrEmpty() ||
@@ -53,6 +55,8 @@ class ObjectTypeEditorController : Controller() {
     fun isValuesDouble(): Boolean {
         return try {
             window.textfieldOutside.text.toDouble()
+            window.textfieldPower.text.toDouble()
+            window.textfieldFrequency.text.toDouble()
             window.textfieldInside.text.toDouble()
             window.textfieldBackHeight.text.toDouble()
             window.textfieldIronLength.text.toDouble()
@@ -73,6 +77,8 @@ class ObjectTypeEditorController : Controller() {
                 if (newObjectType.empty()) {
                     ExperimentObjectsType.new {
                         objectType = window.textfieldObjectType.text
+                        power = window.textfieldPower.text
+                        frequency = window.textfieldFrequency.text
                         insideD = window.textfieldInside.text
                         outsideD = window.textfieldOutside.text
                         ironLength = window.textfieldIronLength.text
@@ -114,6 +120,8 @@ class ObjectTypeEditorController : Controller() {
 
     private fun clearViews() {
         window.textfieldObjectType.clear()
+        window.textfieldPower.clear()
+        window.textfieldFrequency.clear()
         window.textfieldInside.clear()
         window.textfieldOutside.clear()
         window.textfieldIronLength.clear()

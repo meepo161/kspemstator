@@ -7,6 +7,8 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 object ObjectsTypes:  IntIdTable() {
     val objectType = varchar("objectType", 32)
+    val power = varchar("power", 32)
+    val frequency = varchar("frequency", 32)
     val insideD = varchar("insideD", 32)
     val outsideD = varchar("outsideD", 32)
     val ironLength = varchar("ironLength", 32)
@@ -20,6 +22,8 @@ object ObjectsTypes:  IntIdTable() {
 class ExperimentObjectsType(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<ExperimentObjectsType>(ObjectsTypes)
     var objectType by ObjectsTypes.objectType
+    var power by ObjectsTypes.power
+    var frequency by ObjectsTypes.frequency
     var insideD by ObjectsTypes.insideD
     var outsideD by ObjectsTypes.outsideD
     var ironLength by ObjectsTypes.ironLength

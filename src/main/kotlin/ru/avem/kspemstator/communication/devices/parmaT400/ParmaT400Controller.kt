@@ -17,6 +17,7 @@ class ParmaT400Controller(private val unitID: UnitID, observer: Observer) : Obse
 
         private const val U_REGISTER: Int = 4
         private const val I_REGISTER: Int = 7
+        private const val COS_REGISTER: Int = 24
 
         var uAValue: Double = 0.0
         var uBValue: Double = 0.0
@@ -25,12 +26,13 @@ class ParmaT400Controller(private val unitID: UnitID, observer: Observer) : Obse
         var iBValue: Double = 0.0
         var iCValue: Double = 0.0
         var pAvalue: Double = 0.0
+        var cosValue: Double = 0.0
 
         val DEVICE_ID = DeviceType.PARMA
     }
 
     enum class Parameters : Parameter {
-        IS_RESPONDING, U1, U2, U3, I1, I2, I3, P1
+        IS_RESPONDING, U1, U2, U3, I1, I2, I3, P1, COSA
     }
 
     override var isResponding = false
@@ -69,6 +71,17 @@ class ParmaT400Controller(private val unitID: UnitID, observer: Observer) : Obse
 
             pAvalue = registersValues[8].value / 10.0 * 2
             notice(DeviceParameter(unitID.id, DeviceType.PARMA, Parameters.P1, pAvalue))
+            this.isResponding = true
+        } catch (m: ModbusIOException) {
+            this.isResponding = false
+        }
+    }
+
+    fun readCos() {
+        try {
+            val registersValues = ModbusConnection.readInputRegisters(UNIT_ID, COS_REGISTER, 1)
+            cosValue =  1.0 / registersValues[0].value
+            notice(DeviceParameter(unitID.id, DeviceType.PARMA, Parameters.COSA, cosValue))
             this.isResponding = true
         } catch (m: ModbusIOException) {
             this.isResponding = false

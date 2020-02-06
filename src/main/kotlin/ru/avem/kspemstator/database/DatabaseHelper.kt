@@ -13,7 +13,7 @@ fun validateDB() {
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
 
     transaction {
-//        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
+        //        SchemaUtils.drop(Users, ProtocolsTable, ObjectsTable)
         SchemaUtils.create(Users, ProtocolsTable, ObjectsTypes, MarksTypes)
     }
 
@@ -30,34 +30,55 @@ fun validateDB() {
                     fullName = "admin"
                 }
 
-
                 ExperimentObjectsType.new {
-                    objectType = "111"
-                    outsideD = "222"
-                    insideD = "333"
-                    ironLength = "444"
-                    backHeight = "555"
+                    objectType = "ТЕСТ"
+                    power = "260"
+                    frequency = "160"
+                    outsideD = "260"
+                    insideD = "160"
+                    ironLength = "140"
+                    backHeight = "35"
                     material = "Сталь"
-                    insulation = "Лак"
-                    mark = "2222"
-                }
-
-                ExperimentObjectsType.new {
-                    objectType = "2222"
-                    outsideD = "3333"
-                    insideD = "4444"
-                    ironLength = "5555"
-                    backHeight = "6666"
-                    material = "Алюминий"
                     insulation = "Оксидирование"
-                    mark = "2222"
+                    mark = "2212"
                 }
 
                 MarksObjects.new {
-                    mark = "2222"
-                    density = "3333"
-                    losses = "4444"
+                    mark = "2212"
+                    density = "7800"
+                    losses = "2.6"
+                    intensity = "240"
+                }
+
+                MarksObjects.new {
+                    mark = "2013"
+                    density = "7850"
+                    losses = "2.5"
+                    intensity = "185"
+                }
+
+                Protocol.new {
+                    date = "2222"
+                    time = "3333"
+                    objectType = "4444"
+                    factoryNumber = "5555"
+                    insideD = "5555"
+                    outsideD = "5555"
+                    ironLength = "5555"
+                    backHeight = "5555"
+                    material = "5555"
+                    insulation = "5555"
+                    mark = "5555"
+                    density = "5555"
+                    losses = "5555"
                     intensity = "5555"
+                    u1 = "5555"
+                    i1 = "5555"
+                    p1 = "5555"
+                    bf = "5555"
+                    pf = "5555"
+                    pt = "5555"
+                    hf = "5555"
                 }
             }
         }

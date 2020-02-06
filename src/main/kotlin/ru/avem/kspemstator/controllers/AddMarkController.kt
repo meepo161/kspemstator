@@ -97,15 +97,25 @@ class AddMarkController : Controller() {
                 ObjectsTypes.mark eq window.tableViewObjects.selectedItem.toString()
             }
 
-            if (markDouble.empty()) {
-                val item = window.tableViewObjects.selectedItem
-                if (item != null) {
-                    transaction {
-                        MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
+            when (window.tableViewObjects.selectionModel.selectedIndex) {
+                0 -> {
+                    Toast.makeText("Эту марку стали невозможно удалить").show(Toast.ToastType.ERROR)
+                }
+                1 -> {
+                    Toast.makeText("Эту марку стали невозможно удалить").show(Toast.ToastType.ERROR)
+                }
+                else -> {
+                    if (markDouble.empty()) {
+                        val item = window.tableViewObjects.selectedItem
+                        if (item != null) {
+                            transaction {
+                                MarksTypes.deleteWhere { MarksTypes.mark eq item.mark }
+                            }
+                        }
+                    } else {
+                        Toast.makeText("Эта марка стали используется").show(Toast.ToastType.ERROR)
                     }
                 }
-            } else {
-                Toast.makeText("Эта марка стали используется").show(Toast.ToastType.ERROR)
             }
         }
     }
