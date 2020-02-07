@@ -17,6 +17,7 @@ import tornadofx.Controller
 import tornadofx.observable
 import tornadofx.selectedItem
 import java.text.SimpleDateFormat
+import kotlin.math.abs
 
 class MainViewController : Controller() {
 
@@ -93,7 +94,7 @@ class MainViewController : Controller() {
                     CommunicationModel.di6 && !CommunicationModel.di7 && !CommunicationModel.di8 -> {
                         appendOneMessageToLog("Неверная фазировка питания стенда")
                     }
-                    CommunicationModel.i1 > 15 -> {
+                    CommunicationModel.i1 > 15.0 -> {
                         setCause(
                             "Обесточьте установку\n" +
                                     "Превышение тока в установке"
@@ -145,6 +146,10 @@ class MainViewController : Controller() {
         }
     }
 
+    fun getPos1() {
+
+    }
+
     fun calculate() {
         var p = 0.0
         transaction {
@@ -180,6 +185,7 @@ class MainViewController : Controller() {
     }
 
     fun startExperiment() {
+        getPos1()
         calculate()
 
         Platform.runLater {
@@ -267,6 +273,7 @@ class MainViewController : Controller() {
             }
 
             if (isExperimentRunning && isDevicesResponding) {
+                controlVoltage()
                 regulationVoltage(uZadannoe)
                 showResults()
             }
@@ -304,7 +311,7 @@ class MainViewController : Controller() {
     private fun controlVoltage() {
         Thread {
             val lastU = CommunicationModel.u2
-            Thread.sleep(5000)
+            Thread.sleep(10000)
             if (lastU * 1.1 > CommunicationModel.u2) {
                 setCause("Нет напряжения\nПроверьте соединение кабеля")
             }
@@ -312,11 +319,11 @@ class MainViewController : Controller() {
     }
 
     private fun regulationVoltage(voltage: Double) {
-        while (isExperimentRunning && isDevicesResponding && (CommunicationModel.u2 <= voltage * 0.99 || CommunicationModel.u2 > voltage * 1.01)) {
-            if (CommunicationModel.u2 <= voltage * 0.99) {
+        while (isExperimentRunning && isDevicesResponding && (CommunicationModel.u2 <= voltage * 0.96 || CommunicationModel.u2 > voltage * 1.04)) {
+            if (CommunicationModel.u2 <= voltage * 0.96) {
                 CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(UP)
-            } else if (CommunicationModel.u2 > voltage * 1.01) {
+            } else if (CommunicationModel.u2 > voltage * 1.04) {
                 CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
                 CommunicationModel.owenPR200Controller.onRegisterInKMS(DOWN)
             }
@@ -330,12 +337,10 @@ class MainViewController : Controller() {
         measuringUB = CommunicationModel.u2
         measuringIA = CommunicationModel.i1
         measuringPA = CommunicationModel.p1
-        measuringCos = CommunicationModel.cosA
         appendOneMessageToLog(String.format("Напряжение = %.2f В", measuringUB))
         appendOneMessageToLog(String.format("Ток It =  %.2f А", measuringIA))
         appendOneMessageToLog(String.format("Напряжение Ut = %.2f В", measuringUA))
         appendOneMessageToLog(String.format("Активная мощность Pt = %.2f Вт", measuringPA))
-        appendOneMessageToLog(String.format("cos A = %.2f", measuringCos))
 
         CommunicationModel.owenPR200Controller.offRegisterInKMS(UP)
         CommunicationModel.owenPR200Controller.offRegisterInKMS(DOWN)
@@ -361,32 +366,32 @@ class MainViewController : Controller() {
             if (lossesMark >= measuringPt) {
                 appendOneMessageToLog(
                     String.format(
-                        "Запас по удельным потерям на %.2f%",
-                        (measuringPt / (lossesMark / 100))
-                    )
+                        "Запас по удельным потерям %.2f",
+                        abs((measuringPt / (lossesMark / 100)) - 100)
+                    ) + "%"
                 )
             } else {
                 appendOneMessageToLog(
                     String.format(
-                        "Превышение по удельным потерям на %.2f%",
-                        (measuringPt / (lossesMark / 100))
-                    )
+                        "Превышение по удельным потерям %.2f",
+                        abs((measuringPt / (lossesMark / 100)) - 100)
+                    ) + "%"
                 )
             }
 
             if (intensityMark >= measuringHf) {
                 appendOneMessageToLog(
                     String.format(
-                        "Запас по магнитным свойствам на %.2f%",
-                        (measuringHf / (intensityMark / 100))
-                    )
+                        "Запас по магнитным свойствам %.2f",
+                        abs((measuringHf / (intensityMark / 100)) - 100)
+                    ) + "%"
                 )
             } else {
                 appendOneMessageToLog(
                     String.format(
-                        "Превышение по магнитным свойствам на %.2f%",
-                        (measuringHf / (intensityMark / 100))
-                    )
+                        "Превышение по магнитным свойствам %.2f",
+                        abs((measuringHf / (intensityMark / 100)) - 100)
+                    ) + "%"
                 )
             }
         }
@@ -404,16 +409,13 @@ class MainViewController : Controller() {
                 time = timeFormatter.format(unixTime).toString()
                 factoryNumber = view.textFieldFacNumber.text
                 objectType = view.comboboxTypeObject.selectedItem.toString()
-                insideD = view.comboboxTypeObject.value.insideD
-                outsideD = view.comboboxTypeObject.value.outsideD
-                ironLength = view.comboboxTypeObject.value.ironLength
-                backHeight = view.comboboxTypeObject.value.backHeight
-                material = view.comboboxTypeObject.value.material
-                insulation = view.comboboxTypeObject.value.insulation
+                power = view.comboboxTypeObject.value.power
+                frequency = view.comboboxTypeObject.value.frequency
                 mark = view.comboboxTypeObject.value.mark
                 density = densityMark.toString()
                 losses = lossesMark.toString()
                 intensity = intensityMark.toString()
+                pos1 = "Иванов И.И."
                 u1 = String.format("%.2f", measuringUA)
                 i1 = String.format("%.2f", measuringIA)
                 p1 = String.format("%.2f", measuringPA)

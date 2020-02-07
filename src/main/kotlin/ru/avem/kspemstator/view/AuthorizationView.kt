@@ -32,18 +32,17 @@ class AuthorizationView : View("Авторизация") {
 
             alignmentProperty().set(Pos.CENTER)
 
-            label("Авторизация") {}.style = "-fx-font-size: 25 px"
+            label("Авторизация") {}
 
             hbox(spacing = 24.0) {
                 alignmentProperty().set(Pos.CENTER)
 
                 label("Логин") {
-                }.addClass(Styles.medium)
+                }
 
                 textfield {
                     promptText = "Логин"
 
-                    addClass(Styles.medium)
                 }.bind(loginProperty)
             }
 
@@ -51,11 +50,10 @@ class AuthorizationView : View("Авторизация") {
                 alignmentProperty().set(Pos.CENTER)
 
                 label("Пароль") {
-                }.addClass(Styles.medium)
+                }
 
                 passwordfield {
                     promptText = "Пароль"
-                    addClass(Styles.medium)
                 }.bind(passwordProperty)
             }
 
@@ -89,18 +87,15 @@ class AuthorizationView : View("Авторизация") {
                             confirmNotification(
                                 "Авторизация",
                                 "Вы вошли как: ${loginProperty.value}",
-                                Pos.BOTTOM_CENTER,
-                                hideAfter = 3.seconds
+                                Pos.BOTTOM_CENTER
                             )
                             replaceWith<MainView>(
-                                ViewTransition.Metro(1.0.seconds),
-                                sizeToScene = true,
-                                centerOnScreen = true
+
                             )
                         }
                     }
                 }
-            }.style = "-fx-font-size: 14 px"
+            }
         }
-    }
+    }.addClass(Styles.hard, Styles.baseColorFoo)
 }
